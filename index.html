@@ -4,29 +4,46 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
-      #scoreBoard {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100px;
-        background-color: #00000000;
-        color: #5f54f54b;
-        font-size: 20px;
-        text-align: center;
-        line-height: 100px;
-        user-select: none; /* disables text selction */
-      }
-    </style>
+    <link rel="stylesheet" href="index.css" />
   </head>
   <body>
+    
     <div id="scoreBoard"></div>
     <canvas></canvas>
+    <div id="endScreen">
+      <div class="container">
+        <h1>GAME OVER!</h1>
+        <p id="finalScore"></p>
+        <button onclick='restart()' class='glowing-btn'><span class='glowing-txt'>RES<span class='faulty-letter'>T</span>ART</span></button>
+      </div>
+    </div>
+    <div id="startOverlay">
+      <div class="container">
+        <h1>ORBIT💫WARS</h1>
+        <p>Use WASD to move👽</p>
+        <button onclick='startGame()' class='glowing-btn'><span class='glowing-txt'>S<span class='faulty-letter'>T</span>ART</span></button>
+      </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/gsap.min.js" integrity="sha512-qF6akR/fsZAB4Co1QDDnUXWnaQseLGXoniuSuSlPQK6+aWhlMZcHzkasCSlnWoe+TJuudlka1/IQ01Dnhgq95g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="index.js"></script>
+    <script> 
+      const startGame = ()=>{ 
+        const startSfx = new Audio("./Bonus/sfx_shieldUp.ogg");
+        startSfx.play();
+        animate(); 
+        document.getElementById("startOverlay").style.display = "none"; 
+        document.getElementById("endScreen").style.display = "none";  
+        spawnEnemies(); 
+      };
+      const restart = ()=>{ 
+        const startSfx = new Audio("./Bonus/sfx_shieldUp.ogg");
+        startSfx.play();
+        reset(); 
+        animate(); 
+        document.getElementById("startOverlay").style.display = "none"; 
+        document.getElementById("endScreen").style.display = "none";  
+        spawnEnemies(); 
+      };
+    </script>
   </body>
 </html>

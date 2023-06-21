@@ -1,7 +1,7 @@
 const canvas = document.querySelector("canvas");
 const scoreBoard = document.getElementById("scoreBoard");
+// const startOverlay = document.getElementById("startOverlay");
 
-canvas.style.overflow = "hidden";
 const context = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
@@ -27,8 +27,8 @@ let meteors = new Image();
 meteors.src = "./PNG/Meteors/meteorBrown_big1.png";
 
 meteors.onload = function () {
-  rockets.src = "./PNG/Effects/fire08.png"; 
-}
+  rockets.src = "./PNG/Effects/fire08.png";
+};
 rockets.onload = function () {
   shield.src = "./PNG/Effects/shield3.png";
 };
@@ -36,20 +36,23 @@ shield.onload = function () {
   playerIcon.src = "./PNG/playerShip1_orange.png";
 };
 playerIcon.onload = function () {
-  player.draw();
-  animate();
-  spawnEnemies(); 
+  // player.draw();
+  // animate();
   scoreBoard.innerHTML = "Score: " + score;
+  // spawnEnemies();
 };
-
 
 class Player {
   constructor(x, y, radius, color) {
     this.x = x;
     this.y = y;
-    this.radius = radius+10;
+    this.radius = radius + 10;
     this.color = color;
     this.angle = -1.5708;
+    this.velocity = {
+      x: 0,
+      y: 0,
+    };
   }
 
   draw() {
@@ -58,24 +61,28 @@ class Player {
     context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
     context.fillStyle = this.color;
     context.fill();
-    // context.drawImage(playerIcon,x - 50,y  - 50);  
+    // context.drawImage(playerIcon,x - 50,y  - 50);
   }
 
   updateDirection() {
     //updates player direction based on mouse movemnt
     let angleInRadians = this.angle + 1.5708;
     // this.draw();  //hitbox
-    context.translate(x, y);
+    if( (this.x + this.velocity.x < canvas.width - this.radius) && (this.x + this.velocity.x > this.radius)) 
+      this.x = this.x + this.velocity.x;
+    if( (this.y + this.velocity.y < canvas.height - this.radius) && (this.y + this.velocity.y > this.radius) )
+      this.y = this.y + this.velocity.y;
+    context.translate(this.x, this.y);
     context.rotate(angleInRadians);
     context.drawImage(playerIcon, -25, -18, 50, 50);
-    context.drawImage(shield, -50, -50,100, 100);
+    context.drawImage(shield, -50, -50, 100, 100);
     context.rotate(-angleInRadians);
-    context.translate(-x, -y);
+    context.translate(-this.x, -this.y);
   }
 }
 
 class Projectile {
-  constructor(x, y, radius, color, velocity,angle) {
+  constructor(x, y, radius, color, velocity, angle) {
     this.x = x;
     this.y = y;
     this.radius = radius;
@@ -94,18 +101,17 @@ class Projectile {
     context.drawImage(rockets, -2.5, -5, 5, 25);
     context.rotate(-this.angle - 1.5708);
     context.translate(-this.x, -this.y);
-
   }
 
   update() {
     this.draw();
-    this.x = this.x + (this.velocity.x * 6);
-    this.y = this.y + (this.velocity.y * 6);
+    this.x = this.x + this.velocity.x * 6;
+    this.y = this.y + this.velocity.y * 6;
   }
 }
 
 class Enemy {
-  //same as projectile
+  //same as projectile but no rotation
   constructor(x, y, radius, color, velocity) {
     this.x = x;
     this.y = y;
@@ -115,15 +121,13 @@ class Enemy {
   }
 
   draw() {
-    // context.beginPath();
-    // context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-    // context.fillStyle = this.color;
-    // context.fill();
-    context.translate(this.x, this.y);
-    context.rotate(this.angle + 1.5708);
-    context.drawImage(meteors, -this.radius, -this.radius, this.radius*2, this.radius*2);
-    context.rotate(-this.angle - 1.5708);
-    context.translate(-this.x, -this.y);
+    context.drawImage(
+      meteors,
+      this.x-this.radius,
+      this.y-this.radius,
+      this.radius * 2,
+      this.radius * 2
+    );
   }
 
   update() {
@@ -131,17 +135,50 @@ class Enemy {
     this.x = this.x + this.velocity.x;
     this.y = this.y + this.velocity.y;
   }
+}
 
+const friction = 0.99;
+class Particle {
+  //same as projectile but no rotation
+  constructor(x, y, radius, color, velocity) {
+    this.x = x;
+    this.y = y;
+    this.radius = radius;
+    this.color = color;
+    this.velocity = velocity; //object with x and y velocity rates to move at angle
+  }
+
+  draw() {
+    context.drawImage(
+      meteors,
+      this.x,
+      this.y,
+      this.radius * 2,
+      this.radius * 2
+    );
+  }
+
+  update() {
+    
+    this.radius -= 0.05; //shrinks particles
+    this.draw();
+    this.velocity.x *= friction; //slows down particles
+    this.velocity.y *= friction;
+    this.x = this.x + this.velocity.x;
+    this.y = this.y + this.velocity.y;
+  }
 }
 
 const player = new Player(x, y, 40, "blue");
 
 const projectiles = [];
 const enemies = [];
+const particles = [];
 
+let intervalId;
 function spawnEnemies() {
-  setInterval(() => {
-    const radius = Math.random() * (30 - 4) + 4; //random radius between 4 and 30
+  intervalId = setInterval(() => {
+    const radius = Math.random() * (30 - 6) + 6; //random radius between 6 and 30
     let x;
     let y;
     if (Math.random() < 0.5) {
@@ -165,6 +202,20 @@ function spawnEnemies() {
   }, 1000); //new enemy every second
 }
 
+function reset() {
+  clearInterval(intervalId);
+  player.x = canvas.width / 2;
+  player.y = canvas.height / 2;
+  player.velocity.x = 0;
+  player.velocity.y = 0;
+  player.angle = 0;
+  projectiles.splice(0, projectiles.length);
+  enemies.splice(0, enemies.length);
+  particles.splice(0, particles.length);
+  score = 0;
+  scoreBoard.innerHTML = "Score: " + score;
+}
+
 let animationId;
 // var alpha = 0, /// current alpha value
 //   delta = 0.2; /// delta = speed
@@ -173,18 +224,19 @@ function animate() {
   //animation loop
   animationID = requestAnimationFrame(animate);
 
-  const img = new Image();
-  img.src = "./Backgrounds/black.png";
-  const pat = context.createPattern(img, "repeat");
-  context.fillStyle = pat;
+  // const img = new Image();
+  // img.src = "./Backgrounds/black.png";
+  // const pat = context.createPattern(img, "repeat");
+  // context.fillStyle = pat;
 
   // alpha += delta;
   // if (alpha <= 0 || alpha >= 0.5) delta = -delta;
   // context.fillStyle = `rgba(0, 0, 0, ${alpha})`; //sin wave opacity to create rocket flames effect
 
-  // context.fillStyle = `rgba(0, 0, 0, 0.5`; //sin wave opacity to create rocket flames effect
+  context.fillStyle = `rgba(0, 0, 0, 0.3`; //sin wave opacity to create rocket flames effect
 
   context.fillRect(0, 0, canvas.width, canvas.height); //clears canvas each time to redraw player and projectiles in new position
+
 
   projectiles.forEach((projectile, index) => {
     projectile.update(); //updates projectile position
@@ -202,36 +254,68 @@ function animate() {
     }
   });
 
+  particles.forEach((particle, index) => {
+    if(particle.radius <= 2){
+      particles.splice(index, 1); //removes projectile from array
+    }
+    particle.update(); //updates projectile position
+  });
+
+
   enemies.forEach((enemy, index) => {
     enemy.update(); //updates enemy position
 
     const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y); //distance between player and enemy on collision
     if (dist - enemy.radius - player.radius < 1) {
       //collision
+      const gameoverSfx = new Audio("./Bonus/sfx_lose.ogg");
+      gameoverSfx.play();
       cancelAnimationFrame(animationID); //stops animation loop at current frame
+      const finalScore = document.getElementById("finalScore");
+      finalScore.innerHTML = "Your score was : " + score;
+      const endScreen = document.getElementById("endScreen");
+      endScreen.style.display = "block";
+
     }
 
-    //collision detection btwn enemy and player
+    //collision detection btwn enemy and player O(n2) time
     projectiles.forEach((projectile, projectileIndex) => {
       const dist = Math.hypot(projectile.x - enemy.x, projectile.y - enemy.y); //distance between projectile and enemy
       if (dist - enemy.radius - projectile.radius < 1) {
+        //create explosions
+        for (let i = 0; i < enemy.radius * 1.5; i++) {
+          particles.push(
+            new Particle(
+              projectile.x,
+              projectile.y,
+              Math.random() * 5,
+              enemy.color,
+              {
+                x: (Math.random() - 0.5) * (Math.random() * 6), //directtion and speed
+                y: (Math.random() - 0.5) * (Math.random() * 6),
+              }
+            )
+          );
+        }
+
         //collision
         setTimeout(() => {
           score += 100;
           scoreBoard.innerHTML = "Score: " + score;
-          
-          enemies.splice(index, 1); //removes enemy from array
+          const sfx_hit = new Audio("./Bonus/hit.mp3");
+          sfx_hit.play();
+          // if(enemy.radius-10 > 15){
+          //   gsap.to(enemy, {radius: enemy.radius-10}); //shrinks enemy on collision
 
-          // if(enemy.radius > 20){
-          //   // context.drawImage(playerShip3_damage1,enemy.x,enemy.y); //todo: breaking animation
-
-          //   //todo : split enemy into 2 smaller enemies 
-          //   setTimeout(() => {
-          //     enemies.push(new Enemy(enemy.x, enemy.y, enemy.radius /2, enemy.color, enemy.velocity));
-          //     // enemies.push(new Enemy(enemy.x+10, enemy.y, enemy.radius - 15, enemy.color, enemy.velocity));
-          //   }, 0);
+          //   //todo : split enemy into 2 smaller enemies
+          //   // setTimeout(() => {
+          //   //     enemies.push(new Enemy(enemy.x, enemy.y, enemy.radius /2, enemy.color, enemy.velocity));
+          //   //     // enemies.push(new Enemy(enemy.x+10, enemy.y, enemy.radius - 15, enemy.color, enemy.velocity));
+          //   //   }, 0);
           // }
+          // else
 
+          enemies.splice(index, 1); //removes enemy from array
           projectiles.splice(projectileIndex, 1); //removes projectile from array
         }, 0); //removes enemy and projectile from screen on the next frame so no flicker
       }
@@ -242,26 +326,69 @@ function animate() {
 }
 
 window.addEventListener("click", (event) => {
-  //need x and y velocity rates to move at angle / direction of click
+  //need x and y velocity rates to move at angle / direction of click based on players location
   const angle = Math.atan2(
-    event.clientY - canvas.height / 2,
-    event.clientX - canvas.width / 2
+    event.clientY - player.y,
+    event.clientX - player.x
   ); //gets angle of click
   const velocity = {
     x: Math.cos(angle),
     y: Math.sin(angle),
   };
-  const projectile = new Projectile(x, y, 5, "red", velocity,angle);
-
+  const projectile = new Projectile(player.x, player.y, 5, "red", velocity, angle);
+  const sfx_laser = new Audio("./Bonus/fire.mp3");
+  sfx_laser.play();
   projectiles.push(projectile);
 });
 
 addEventListener("mousemove", (event) => {
   const angle = Math.atan2(
-    event.clientY - canvas.height / 2,
-    event.clientX - canvas.width / 2
+    event.clientY - player.y,
+    event.clientX - player.x
   );
   player.angle = angle;
 });
-// animate();
-// spawnEnemies();
+
+
+//player controller
+addEventListener('keydown', (event) => {
+  if(event.key == 's'){
+    player.velocity.y = 2;
+  }
+});
+addEventListener('keydown', (event) => {
+  if(event.key == 'w'){
+    player.velocity.y = -2;
+  }
+});
+addEventListener('keydown', (event) => {
+  if(event.key == 'd'){
+    player.velocity.x = 2;
+  }
+});
+addEventListener('keydown', (event) => {
+  if(event.key == 'a'){
+    player.velocity.x = -2;
+  }
+});
+
+addEventListener('keyup', (event) => {
+  if(event.key == 's'){
+    player.velocity.y = 0;
+  }
+});
+addEventListener('keyup', (event) => {
+  if(event.key == 'w'){
+    player.velocity.y = 0;
+  }
+});
+addEventListener('keyup', (event) => {
+  if(event.key == 'd'){
+    player.velocity.x = 0;
+  }
+});
+addEventListener('keyup', (event) => {
+  if(event.key == 'a'){
+    player.velocity.x = 0;
+  }
+});
