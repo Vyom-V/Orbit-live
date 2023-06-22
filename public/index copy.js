@@ -1,6 +1,7 @@
 const canvas = document.querySelector("canvas");
 const scoreBoard = document.getElementById("scoreBoard");
-// const startOverlay = document.getElementById("startOverlay");
+
+const socket = io(); // initialize a new socket.io instance by passing the server object
 
 const context = canvas.getContext("2d");
 
@@ -14,26 +15,26 @@ const y = canvas.height / 2;
 let score = 0;
 
 let breakAnim1 = new Image();
-breakAnim1.src = "./PNG/Damage/playerShip3_damage3.png";
+breakAnim1.src = "./Resources/PNG/Damage/playerShip3_damage3.png";
 let breakAnim2 = new Image();
-breakAnim2.src = "./PNG/Damage/playerShip3_damage2.png";
+breakAnim2.src = "./Resources/PNG/Damage/playerShip3_damage2.png";
 let breakAnim3 = new Image();
-breakAnim3.src = "./PNG/Damage/playerShip3_damage1.png";
+breakAnim3.src = "./Resources/PNG/Damage/playerShip3_damage1.png";
 
 let shield = new Image();
 let playerIcon = new Image();
 let rockets = new Image();
 let meteors = new Image();
-meteors.src = "./PNG/Meteors/meteorBrown_big1.png";
+meteors.src = "./Resources/PNG/Meteors/meteorBrown_big1.png";
 
 meteors.onload = function () {
-  rockets.src = "./PNG/Effects/fire08.png";
+  rockets.src = "./Resources/PNG/Effects/fire08.png";
 };
 rockets.onload = function () {
-  shield.src = "./PNG/Effects/shield3.png";
+  shield.src = "./Resources/PNG/Effects/shield3.png";
 };
 shield.onload = function () {
-  playerIcon.src = "./PNG/playerShip1_orange.png";
+  playerIcon.src = "./Resources/PNG/playerShip1_orange.png";
 };
 playerIcon.onload = function () {
   // player.draw();
@@ -46,7 +47,7 @@ class Player {
   constructor(x, y, radius, color) {
     this.x = x;
     this.y = y;
-    this.radius = radius + 10;
+    this.radius = radius;
     this.color = color;
     this.angle = -1.5708;
     this.velocity = {
@@ -74,8 +75,8 @@ class Player {
       this.y = this.y + this.velocity.y;
     context.translate(this.x, this.y);
     context.rotate(angleInRadians);
-    context.drawImage(playerIcon, -25, -18, 50, 50);
-    context.drawImage(shield, -50, -50, 100, 100);
+    context.drawImage(playerIcon,-this.radius/2,-this.radius/2,this.radius,this.radius);
+    context.drawImage(shield, -this.radius, -this.radius, this.radius*2, this.radius*2);
     context.rotate(-angleInRadians);
     context.translate(-this.x, -this.y);
   }
@@ -169,7 +170,7 @@ class Particle {
   }
 }
 
-const player = new Player(x, y, 40, "blue");
+const player = new Player(x, y, 30, "blue");
 
 const projectiles = [];
 const enemies = [];
@@ -225,7 +226,7 @@ function animate() {
   animationID = requestAnimationFrame(animate);
 
   // const img = new Image();
-  // img.src = "./Backgrounds/black.png";
+  // img.src = "./Resources/Backgrounds/black.png";
   // const pat = context.createPattern(img, "repeat");
   // context.fillStyle = pat;
 
@@ -268,7 +269,7 @@ function animate() {
     const dist = Math.hypot(player.x - enemy.x, player.y - enemy.y); //distance between player and enemy on collision
     if (dist - enemy.radius - player.radius < 1) {
       //collision
-      const gameoverSfx = new Audio("./Bonus/sfx_lose.ogg");
+      const gameoverSfx = new Audio("./Resources/Bonus/sfx_lose.ogg");
       gameoverSfx.play();
       cancelAnimationFrame(animationID); //stops animation loop at current frame
       const finalScore = document.getElementById("finalScore");
@@ -302,7 +303,7 @@ function animate() {
         setTimeout(() => {
           score += 100;
           scoreBoard.innerHTML = "Score: " + score;
-          const sfx_hit = new Audio("./Bonus/hit.mp3");
+          const sfx_hit = new Audio("./Resources/Bonus/hit.mp3");
           sfx_hit.play();
           // if(enemy.radius-10 > 15){
           //   gsap.to(enemy, {radius: enemy.radius-10}); //shrinks enemy on collision
@@ -336,7 +337,7 @@ window.addEventListener("click", (event) => {
     y: Math.sin(angle),
   };
   const projectile = new Projectile(player.x, player.y, 5, "red", velocity, angle);
-  const sfx_laser = new Audio("./Bonus/fire.mp3");
+  const sfx_laser = new Audio("./Resources/Bonus/fire.mp3");
   sfx_laser.play();
   projectiles.push(projectile);
 });

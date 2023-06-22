@@ -24,25 +24,26 @@
         <button onclick='startGame()' class='glowing-btn'><span class='glowing-txt'>S<span class='faulty-letter'>T</span>ART</span></button>
       </div>
     </div>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/gsap.min.js" integrity="sha512-qF6akR/fsZAB4Co1QDDnUXWnaQseLGXoniuSuSlPQK6+aWhlMZcHzkasCSlnWoe+TJuudlka1/IQ01Dnhgq95g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="index.js"></script>
     <script> 
       const startGame = ()=>{ 
-        const startSfx = new Audio("./Bonus/sfx_shieldUp.ogg");
+        const startSfx = new Audio("./Resources/Bonus/sfx_shieldUp.ogg");
         startSfx.play();
         animate(); 
         document.getElementById("startOverlay").style.display = "none"; 
         document.getElementById("endScreen").style.display = "none";  
-        spawnEnemies(); 
+        // spawnEnemies(); 
       };
       const restart = ()=>{ 
-        const startSfx = new Audio("./Bonus/sfx_shieldUp.ogg");
+        const startSfx = new Audio("./Resources/Bonus/sfx_shieldUp.ogg");
         startSfx.play();
         reset(); 
         animate(); 
         document.getElementById("startOverlay").style.display = "none"; 
         document.getElementById("endScreen").style.display = "none";  
-        spawnEnemies(); 
+        // spawnEnemies(); 
       };
     </script>
   </body>
