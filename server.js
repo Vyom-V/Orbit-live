@@ -21,24 +21,28 @@ io.on('connection', (socket) => {
         players[socket.id] = {
             x: 500 * Math.random(),
             y: 500 * Math.random(),
+            icon: Math.floor(Math.random() * 12),
         };
         
         io.emit('updatePlayers', players);
     // });
     socket.on('movement', (data) => {
-        const player = players[socket.id] || {};
-        if (data.left) {
+        const player = players[socket.id];
+        if (data == 'a') {
             player.x -= 5;
+            io.emit('updatePlayers', players);
         }
-        if (data.up) {
+        if (data == 'w') {
             player.y -= 5;
+            io.emit('updatePlayers', players);
         }
-        if (data.right) {
-
+        if (data == 'd') {
             player.x += 5;
+            io.emit('updatePlayers', players);
         }
-        if (data.down) {
+        if (data == 's') {
             player.y += 5;
+            io.emit('updatePlayers', players);
         }
     });
     socket.on('disconnect', () => {
