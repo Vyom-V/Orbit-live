@@ -34,7 +34,7 @@ rockets.onload = function () {
   shield.src = "./Resources/PNG/Effects/shield3.png";
 };
 shield.onload = function () {
-  playerIcon.src = "./Resources/PNG/playerShip1_orange.png";
+  playerIcon.src = "./Resources/PNG/1.png";
 };
 playerIcon.onload = function () {
   // player.draw();

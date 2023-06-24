@@ -2,7 +2,7 @@ const scoreBoard = document.getElementById("scoreBoard");
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
 
-const socket = io(); // initialize a new socket.io instance by passing the server object
+const socket = io("ws://localhost:3000"); // initialize a new socket.io instance by passing the server object
 
 const devicePixelRatio = window.devicePixelRatio || 1;
 canvas.width = window.innerWidth * devicePixelRatio;
@@ -47,7 +47,7 @@ rockets.onload = function () {
   shield.src = "./Resources/PNG/Effects/shield3.png";
 };
 
-const player = new Player(x, y, 30, 2);
+const player = new Player(x, y, 15, 2);
 const frontendPlayers = {};
 
 socket.on("updatePlayers", (backendPlayers) => {
@@ -55,11 +55,13 @@ socket.on("updatePlayers", (backendPlayers) => {
     const backendPlayer = backendPlayers[id];
 
     if (!frontendPlayers[id]) {
-      frontendPlayers[id] = new Player(backendPlayer.x, backendPlayer.y, 30, backendPlayer.icon);
+      frontendPlayers[id] = new Player(backendPlayer.x, backendPlayer.y, 15, backendPlayer.icon);
     }
     else{
       frontendPlayers[id].x = backendPlayer.x;
       frontendPlayers[id].y = backendPlayer.y;
+      frontendPlayers[id].angle = backendPlayer.angle;
+      frontendPlayers[id].velocity = backendPlayer.velocity;
     }
 
     //optimise this later
@@ -88,45 +90,3 @@ function animate() {
     frontendPlayers[id].updateDirection();  
   }
 }
-
-
-//player rotation
-addEventListener("mousemove", (event) => {
-  const angle = Math.atan2(event.clientY - player.y, event.clientX - player.x);
-  player.angle = angle;
-});
-
-//player controller
-addEventListener("keydown", (event) => {
-  if (event.key == "s") {
-    socket.emit("movement", 's');
-    // player.velocity.y = 2;
-  }
-  if (event.key == "w") {
-    socket.emit("movement", 'w');
-    // player.velocity.y = -2;
-  }
-  if (event.key == "d") {
-    socket.emit("movement", 'd');
-    // player.velocity.x = 2;
-  }
-  if (event.key == "a") {
-    socket.emit("movement",'a');
-    // player.velocity.x = -2;
-  }
-});
-
-addEventListener("keyup", (event) => {
-  if (event.key == "s") {
-    player.velocity.y = 0;
-  }
-  if (event.key == "w") {
-    player.velocity.y = 0;
-  }
-  if (event.key == "d") {
-    player.velocity.x = 0;
-  }
-  if (event.key == "a") {
-    player.velocity.x = 0;
-  }
-});
