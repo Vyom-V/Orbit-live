@@ -21,9 +21,13 @@
       <div class="container">
         <h1>ORBIT💫WARS</h1>
         <p>Use WASD to move👽</p>
+        <div class="inputBox">
+          <input id='name' type="text" autocomplete="off" placeholder="Enter your name"/>
+        </div>
         <button onclick='startGame()' class='glowing-btn'><span class='glowing-txt'>S<span class='faulty-letter'>T</span>ART</span></button>
       </div>
     </div>
+    <script src='./Classes/NameTag.js'> </script>
     <script src='./Classes/Player.js'> </script>
     <script src='./Classes/Projectiles.js'> </script>
     <script src='./Classes/Enemy.js'> </script>
@@ -35,9 +39,10 @@
     <script src="index.js"></script>
     <script> 
       const startGame = ()=>{ 
+        const name = document.getElementById("name").value;
         const startSfx = new Audio("./Resources/Bonus/sfx_shieldUp.ogg");
         startSfx.play();
-        animate(); 
+        start(name);
         document.getElementById("startOverlay").style.display = "none"; 
         document.getElementById("endScreen").style.display = "none";  
         // spawnEnemies(); 
@@ -46,7 +51,6 @@
         const startSfx = new Audio("./Resources/Bonus/sfx_shieldUp.ogg");
         startSfx.play();
         reset(); 
-        animate(); 
         document.getElementById("startOverlay").style.display = "none"; 
         document.getElementById("endScreen").style.display = "none";  
         // spawnEnemies(); 

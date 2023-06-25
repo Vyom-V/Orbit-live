@@ -1,5 +1,6 @@
 let sent = false;
-addEventListener("mousemove", (event) => {  
+addEventListener("mousemove", (event) => { 
+    if(playerDied || !frontendPlayers[socket.id]) return;
     const angle = Math.atan2(
         (event.clientY * window.devicePixelRatio) - frontendPlayers[socket.id].y,
         (event.clientX * window.devicePixelRatio) - frontendPlayers[socket.id].x
@@ -31,35 +32,35 @@ setInterval(() => {
 //player controller
 let speed = 4;
 addEventListener("keydown", (event) => {
-  if (event.key == "s") {
+  if (event.key == "s" || event.key == "S") {
     keys.s = true;
-    frontendPlayers[socket.id].y = speed; //client side prediction
+    // frontendPlayers[socket.id].y = speed; //client side prediction
   }
-  if (event.key == "w") {
+  if (event.key == "w" || event.key == "W") {
     keys.w = true;
-    frontendPlayers[socket.id].y = -speed;
+    // frontendPlayers[socket.id].y = -speed;
   }
-  if (event.key == "d") {
+  if (event.key == "d" || event.key == "D") {
     keys.d = true;
-    frontendPlayers[socket.id].x = speed;
+    // frontendPlayers[socket.id].x = speed;
   }
-  if (event.key == "a") {
+  if (event.key == "a" || event.key == "A") {
     keys.a = true;
-    frontendPlayers[socket.id].x = -speed;
+    // frontendPlayers[socket.id].x = -speed;
   }
 });
 
 addEventListener("keyup", (event) => {
-  if (event.key == "s") {
+  if (event.key == "s" || event.key == "S") {
     keys.s = false;
   }
-  if (event.key == "w") {
+  if (event.key == "w" || event.key == "W") {
     keys.w = false;
   }
-  if (event.key == "d") {
+  if (event.key == "d" || event.key == "D") {
     keys.d = false;
   }
-  if (event.key == "a") {
+  if (event.key == "a" || event.key == "A") {
     keys.a = false;
   }
 });

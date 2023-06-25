@@ -1,10 +1,13 @@
 class Player {
-  constructor(x, y, radius, icon) {
+  constructor(x, y, radius, icon, hp , name) {
     this.x = x;
     this.y = y;
     this.radius = radius * window.devicePixelRatio;
     this.icon = icon;
     this.angle = -1.5708;
+    this.hp = hp;
+    this.name = name;
+    this.nameTag = new NameTag(this.x, this.y, this.name); 
   }
 
   draw() {
@@ -15,19 +18,19 @@ class Player {
     context.fill();
   }
 
+  drawHpBar() {
+    //draws hp bar
+    context.beginPath();
+    context.rect(this.x + 30 , this.y - 30, this.hp*1.5, 8);
+    context.fillStyle = "blue";
+    context.fill();
+  }
+
   updateDirection() {
-    //updates player direction based on mouse movemnt
+    //updates player direction based on mouse movemnt and keydown
     // this.draw();  //hitbox
-    // if (
-    //   this.x + this.velocity.x < canvas.width - this.radius &&
-    //   this.x + this.velocity.x > this.radius
-    // )
-    //   this.x = this.x + this.velocity.x;
-    // if (
-    //   this.y + this.velocity.y < canvas.height - this.radius &&
-    //   this.y + this.velocity.y > this.radius
-    // )
-    //   this.y = this.y + this.velocity.y;
+    this.nameTag.draw(this.x / devicePixelRatio , this.y / devicePixelRatio);
+    this.drawHpBar();
 
     let angleInRadians = this.angle + 1.5708;
     context.save();
@@ -35,20 +38,11 @@ class Player {
     context.rotate(angleInRadians);
     context.drawImage(
       playerIcons[this.icon],
-      -this.radius,
-      -this.radius,
-      this.radius * 2,
-      this.radius * 2
+      -(this.radius * 1.5)/2,
+      -(this.radius * 1.5)/2,
+      this.radius * 1.5,
+      this.radius * 1.5,
     );
-    // context.drawImage(
-    //   shield,
-    //   -this.radius,
-    //   -this.radius,
-    //   this.radius * 2,
-    //   this.radius * 2
-    // // );
-    // context.rotate(-angleInRadians);
-    // context.translate(-this.x, -this.y);
     context.restore();
   }
 }

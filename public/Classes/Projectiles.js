@@ -5,18 +5,18 @@ class Projectile {
       this.y = y;
       this.radius = radius;
       this.color = color;
-      this.velocity = velocity; //object with x and y velocity rates to move at angle
+      this.velocity = 0; //object with x and y velocity rates to move at angle
       this.angle = angle;
     }
   
     draw() {
       // context.beginPath();
-      // context.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-      // context.fillStyle = this.color;
+      // context.arc(0,0, 5 * devicePixelRatio, 0, Math.PI * 2, false);
+      // context.fillStyle = 'red';
       // context.fill();
       context.translate(this.x, this.y);
       context.rotate(this.angle + 1.5708);
-      context.drawImage(rockets, -2.5, -5, 5, 25);
+      context.drawImage(rockets, -2.5, -5, 5 * devicePixelRatio, 25);
       context.rotate(-this.angle - 1.5708);
       context.translate(-this.x, -this.y);
     }

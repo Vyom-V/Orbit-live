@@ -9,6 +9,10 @@ canvas{
   width: 100%;
 }
 
+  .noSelect {
+    user-select: none;
+  }
+
   #scoreBoard {
     position: absolute;
     top: 0;
@@ -48,7 +52,7 @@ canvas{
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #17172eb6;
+    background-color: #121223;
   }
   .container{
     flex-direction: column;
@@ -280,4 +284,38 @@ canvas{
   .glowing-btn{
     font-size: 1em;
   }
+}
+
+
+
+/* input feild css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+.inputBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #dddddd00;
+  margin-bottom: 40px;
+}
+input {
+  border: 0.2px solid rebeccapurple;
+  border-radius: 12px;
+  padding: 6px 12px;
+  background: transparent;
+}
+input:hover{
+  box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+}
+input:focus{
+  color: #ddd;
+  box-shadow: rgba(0, 0, 0, 0.1) 20px 24px 60px;
+}
+
+input::placeholder {
+  color: rgb(85, 66, 229);
+  text-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
 }
