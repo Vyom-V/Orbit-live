@@ -8,6 +8,7 @@ class Player {
     this.hp = hp;
     this.name = name;
     this.nameTag = new NameTag(this.x, this.y, this.name); 
+    this.hpBar = new HpBar(this.x, this.y, this.hp);
   }
 
   draw() {
@@ -18,23 +19,23 @@ class Player {
     context.fill();
   }
 
-  drawHpBar() {
+  drawHpBar(cam) {
     //draws hp bar
     context.beginPath();
-    context.rect(this.x + 30 , this.y - 30, this.hp*1.5, 8);
+    context.rect(this.x - cam.x + 30 , this.y - cam.y -30, this.hp*1.5, 8);
     context.fillStyle = "blue";
     context.fill();
   }
 
-  updateDirection() {
+  updateDirection(cam) {
     //updates player direction based on mouse movemnt and keydown
     // this.draw();  //hitbox
-    this.nameTag.draw(this.x / devicePixelRatio , this.y / devicePixelRatio);
-    this.drawHpBar();
-
+    // this.drawHpBar(cam);
+    this.nameTag.draw( (this.x - cam.x) / devicePixelRatio , (this.y - cam.y) / devicePixelRatio );
+    this.hpBar.draw( (this.x - cam.x) / devicePixelRatio , (this.y - cam.y) / devicePixelRatio , this.hp );
     let angleInRadians = this.angle + 1.5708;
     context.save();
-    context.translate(this.x, this.y);
+    context.translate(this.x - cam.x, this.y - cam.y);
     context.rotate(angleInRadians);
     context.drawImage(
       playerIcons[this.icon],

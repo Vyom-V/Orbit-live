@@ -3,8 +3,8 @@ window.addEventListener("click", (event) => {
   if(playerDied || !frontendPlayers[socket.id]) return;
   //need x and y velocity rates to move at angle / direction of click based on players location
   const angle = Math.atan2(
-    event.clientY * window.devicePixelRatio - frontendPlayers[socket.id].y,
-    event.clientX * window.devicePixelRatio - frontendPlayers[socket.id].x
+    event.clientY * window.devicePixelRatio - canvas.height / 2,
+    event.clientX * window.devicePixelRatio - canvas.width / 2
   );
 
   const data = {
@@ -17,14 +17,14 @@ window.addEventListener("click", (event) => {
     y: frontendPlayers[socket.id].y,
   };
 
-  //emiting every 15ms to reduce server load
+  //emiting every 30ms to reduce server load
   if (clickSent) return;
   socket.emit("shoot", data);
   clickSent = true;
   let promise = new Promise((resolve, reject) => {
     setTimeout(() => {
       resolve();
-    }, 15);
+    }, 30);
   }); 
   promise.then(() => {
     clickSent = false;

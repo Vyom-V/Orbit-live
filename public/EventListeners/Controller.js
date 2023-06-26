@@ -2,8 +2,8 @@ let sent = false;
 addEventListener("mousemove", (event) => { 
     if(playerDied || !frontendPlayers[socket.id]) return;
     const angle = Math.atan2(
-        (event.clientY * window.devicePixelRatio) - frontendPlayers[socket.id].y,
-        (event.clientX * window.devicePixelRatio) - frontendPlayers[socket.id].x
+        (event.clientY * window.devicePixelRatio) - canvas.height / 2, //since player will always be in the center
+        (event.clientX * window.devicePixelRatio) - canvas.width / 2,  //as camera (ie. entire surroundings) is moving
     );
       frontendPlayers[socket.id].angle = angle; //updates current players angle asap
 

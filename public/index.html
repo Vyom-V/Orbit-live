@@ -14,6 +14,9 @@
       <div class="container">
         <h1>GAME OVER!</h1>
         <p id="finalScore"></p>
+        <div class="inputBox">
+          <input id='nameR' type="text" autocomplete="off" placeholder="Enter your name"/>
+        </div>
         <button onclick='restart()' class='glowing-btn'><span class='glowing-txt'>RES<span class='faulty-letter'>T</span>ART</span></button>
       </div>
     </div>
@@ -22,15 +25,15 @@
         <h1>ORBIT💫WARS</h1>
         <p>Use WASD to move👽</p>
         <div class="inputBox">
-          <input id='name' type="text" autocomplete="off" placeholder="Enter your name"/>
+          <input id='nameS' type="text" autocomplete="off" placeholder="Enter your name"/>
         </div>
         <button onclick='startGame()' class='glowing-btn'><span class='glowing-txt'>S<span class='faulty-letter'>T</span>ART</span></button>
       </div>
     </div>
     <script src='./Classes/NameTag.js'> </script>
+    <script src='./Classes/HpBar.js'> </script>
     <script src='./Classes/Player.js'> </script>
     <script src='./Classes/Projectiles.js'> </script>
-    <script src='./Classes/Enemy.js'> </script>
     <script src='./Classes/Particle.js'> </script>
     <script src='./EventListeners/Controller.js'> </script>
     <script src='./EventListeners/Shoot.js'> </script>
@@ -39,7 +42,7 @@
     <script src="index.js"></script>
     <script> 
       const startGame = ()=>{ 
-        const name = document.getElementById("name").value;
+        const name = document.getElementById("nameS").value;
         const startSfx = new Audio("./Resources/Bonus/sfx_shieldUp.ogg");
         startSfx.play();
         start(name);
@@ -48,9 +51,10 @@
         // spawnEnemies(); 
       };
       const restart = ()=>{ 
+        const name = document.getElementById("nameR").value;
         const startSfx = new Audio("./Resources/Bonus/sfx_shieldUp.ogg");
         startSfx.play();
-        reset(); 
+        reset(name); 
         document.getElementById("startOverlay").style.display = "none"; 
         document.getElementById("endScreen").style.display = "none";  
         // spawnEnemies(); 
