@@ -1,18 +1,27 @@
 let sent = false;
-addEventListener("mousemove", (event) => { 
-    if(playerDied || !frontendPlayers[socket.id]) return;
-    const angle = Math.atan2(
-        (event.clientY * window.devicePixelRatio) - canvas.height / 2, //since player will always be in the center
-        (event.clientX * window.devicePixelRatio) - canvas.width / 2,  //as camera (ie. entire surroundings) is moving
-    );
-      frontendPlayers[socket.id].angle = angle; //updates current players angle asap
+addEventListener("mousemove", (event) => {
+  const thisPlayer = frontendPlayers[socket.id];
+  if (playerDied || !thisPlayer) return;
 
-    if(sent) return;
-    //emiting every 15ms to reduce server load
-    socket.emit("mouseMove", angle);
-    sent = true;
-    let promise = new Promise((resolve, reject) => { setTimeout(() => { resolve(); }, 15); }); //delay to reduce server load
-    promise.then(() => { sent = false; });
+  const angle = Math.atan2(
+    event.clientY * window.devicePixelRatio - (thisPlayer.y - cam.y), //since player will always be in the center
+    event.clientX * window.devicePixelRatio - (thisPlayer.x - cam.x) //as camera (ie. entire surroundings) is moving
+  );
+
+  thisPlayer.angle = angle; //updates current players angle asap
+
+  if (sent) return;
+  //emiting every 15ms to reduce server load
+  socket.emit("mouseMove", angle);
+  sent = true;
+  let promise = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve();
+    }, 15);
+  }); //delay to reduce server load
+  promise.then(() => {
+    sent = false;
+  });
 });
 
 let keys = {
@@ -23,11 +32,10 @@ let keys = {
 };
 
 setInterval(() => {
-  if(keys.w || keys.a || keys.s || keys.d){
+  if (keys.w || keys.a || keys.s || keys.d) {
     socket.emit("keydown", keys);
   }
 }, 15);
-
 
 //player controller
 let speed = 4;

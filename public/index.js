@@ -43,7 +43,7 @@ for (let i = 0; i < 8; i++) {
 let shield = new Image();
 let rockets = new Image();
 const bgImg = new Image();
-bgImg.src = "./Resources/Backgrounds/space1.jpg";
+bgImg.src = "./Resources/Backgrounds/s1.png";
 bgImg.onload = function () {
   console.log("background loaded");
   // animate();
@@ -64,6 +64,10 @@ let frontendObstacles = new Array();
 let started = false;
 let playerDied = false;
 let cam = { x: 0, y: 0 };
+const arenaSize ={
+  x: 5300,
+  y: 3000,
+};
 
 socket.on("updatePlayers", (backendPlayers) => {
   if (started) playerDied = socket.id in backendPlayers ? false : true;
@@ -73,16 +77,66 @@ socket.on("updatePlayers", (backendPlayers) => {
   cam.x = currPLayer.x - canvas.width / 2; //canvas width can change for different devices, FIX LATER
   cam.y = currPLayer.y - canvas.height / 2;
 
+  if (cam.x < 0) cam.x = 0;
+  if (cam.y < 0) cam.y = 0;
+  if (cam.x > arenaSize.x - canvas.width) cam.x = arenaSize.x - canvas.width;
+  if (cam.y > arenaSize.y - canvas.height) cam.y = arenaSize.y - canvas.height;
+
+  let minHeap = new Heap();
+
+  
   for (let id in backendPlayers) {
     const backendPlayer = backendPlayers[id];
-    if ( //if just enabling it gives a LoL fog of war effect could be cool
+
+    minHeap.insert(backendPlayer.score, backendPlayer.name);
+    // console.log(minHeap.peekKey());
+    
+    if(minHeap.getCount() < 5){
+      minHeap.insert(backendPlayer.score, backendPlayer.name);
+    }
+    else {
+      if(minHeap.peekKey() < backendPlayer.score){
+        minHeap.remove();
+        minHeap.insert(backendPlayer.score, backendPlayer.name);
+      }
+    }
+  }
+
+  let scores = [];
+  while(minHeap.getCount() > 0){
+    // console.log(minHeap.remove());
+    const userName = minHeap.peekKey();
+    const playerScore = minHeap.remove();
+    scores.push( { userName , playerScore } );
+    minHeap.remove();
+  }
+
+  const scoreBoard = document.getElementById("leaderBoard");
+  scoreBoard.innerHTML = "";
+  for(let i = scores.length-1; i >=0 ; i--){
+    const scoreBoardElem = document.createElement("li");
+    const scoreBoardName = document.createElement("mark");
+    const scoreBoardScore = document.createElement("small");
+    scoreBoardName.innerHTML = scores[i].playerScore;
+    scoreBoardScore.innerHTML = scores[i].userName;
+    scoreBoardElem.appendChild(scoreBoardName);
+    scoreBoardElem.appendChild(scoreBoardScore);
+    scoreBoard.appendChild(scoreBoardElem);
+  }
+
+
+  for (let id in backendPlayers) {
+    const backendPlayer = backendPlayers[id];
+
+    if (
+      //if just enabling it gives a LoL fog of war effect could be cool
       backendPlayer.x < cam.x ||
       backendPlayer.x > cam.x + canvas.width ||
       backendPlayer.y < cam.y ||
       backendPlayer.y > cam.y + canvas.height
-    )
-    {
-      if(frontendPlayers[id]){ //if player isnt in viewport anymore, remove them
+    ) {
+      if (frontendPlayers[id]) {
+        //if player isnt in viewport anymore, remove them
         frontendPlayers[id].nameTag.elem.remove();
         delete frontendPlayers[id];
       }
@@ -170,13 +224,20 @@ function animate() {
     cancelAnimationFrame(animationID); //stops animation loop at current frame
     return;
   }
-  // context.fillStyle = context.createPattern(bgImg, "repeat");
-  // context.fillStyle = `rgba(0, 0, 0, 0.3`;
-  
+
   context.fillRect(0, 0, canvas.width, canvas.height); //clears canvas each time to redraw player and projectiles in new position
-  console.log(bgImg.width, bgImg.height, canvas.width, canvas.height);
-  context.drawImage(bgImg, cam.x, cam.y, 5000, 3000 , 0, 0, canvas.width, canvas.height);
-  // context.drawImage(bgImg, cam.x, cam.y);
+
+  context.drawImage(
+    bgImg,
+    cam.x,
+    cam.y,
+    4000, 
+    2200,
+    0,
+    0,
+    canvas.width,
+    canvas.height, 
+  );
 
   for (let i = 0; i < frontendProjectiles.length; i++) {
     const frontendProjectile = frontendProjectiles[i];
@@ -200,7 +261,7 @@ function animate() {
 
   for (let i = 0; i < frontendObstacles.length; i++) {
     const frontendObstacle = frontendObstacles[i];
-    if(!frontendObstacle) continue; //if obstacle is destroyed, skip it (undefined
+    if (!frontendObstacle) continue; //if obstacle is destroyed, skip it (undefined
     if (
       frontendObstacle.x < cam.x ||
       frontendObstacle.x > cam.x + canvas.width ||
@@ -215,7 +276,7 @@ function animate() {
       frontendObstacle.x - frontendObstacle.radius - cam.x,
       frontendObstacle.y - frontendObstacle.radius - cam.y,
       frontendObstacle.radius * 2,
-      frontendObstacle.radius *2,
+      frontendObstacle.radius * 2
     );
   }
 
