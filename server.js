@@ -1,8 +1,8 @@
 const express = require("express");
 const app = express();
 
-const http = require("http");
-const server = http.createServer(app);
+const https = require("https");
+const server = https.createServer(app);
 const { Server } = require("socket.io"); // import socket.io
 // create a new instance of socket.io by passing the server object
 const io = new Server(server, { pingInterval: 2000, pingTimeout: 5000 });
