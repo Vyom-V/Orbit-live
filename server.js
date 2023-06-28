@@ -13,7 +13,11 @@ app.use(express.static("public")); // serves the static files
 
 app.get("/", (req, res) => res.sendFile("./index.html"));
 
-const arenaSize = 3000;
+const arenaSize ={
+  x: 5300,
+  y: 3000,
+};
+
 players = {};
 obstacles = new Array();
 projectiles = new Array();
@@ -28,10 +32,11 @@ io.on("connection", (socket) => {
       x: 3000 * Math.random() + 50,
       y: 2000 * Math.random() + 50,
       radius: 20, //hitbox
-      icon: Math.floor(Math.random() * 12),
       angle: -1.5708,
       hp: 100,
+      icon: Math.floor(Math.random() * 12),
       name: data.name,
+      score: 0,
       devicePixelRatio: data.devicePixelRatio,
     };
   });
@@ -43,14 +48,14 @@ io.on("connection", (socket) => {
     player.angle = data;
   });
 
-  const speed = 4;
+  const speed = 5;
   socket.on("keydown", (data) => {
     const player = players[socket.id];
     if (!player) return;
     if(player.y - 40< 0) player.y = 40; //prevents player from going out of bounds
-    if(player.y + 40> arenaSize) player.y = arenaSize - 40;
+    if(player.y + 40> arenaSize.y) player.y = arenaSize.y - 40;
     if(player.x - 40< 0) player.x = 40;
-    if(player.x + 40> arenaSize) player.x = arenaSize - 40;
+    if(player.x + 40> arenaSize.x) player.x = arenaSize.x - 40;
 
     if (player && data.s) {
       player.y += speed;
@@ -89,15 +94,27 @@ io.on("connection", (socket) => {
 });
 
 let spawnTime = 1000;
+let spawned = false;
 setInterval(() => {
-  // spawnTime = obstacles.length * (spawnTime/2);
+  spawnTime = obstacles.length * (spawnTime/2);
+  if (spawned) return;
   const obstacle = {
-    x: arenaSize * Math.random(),
-    y: arenaSize * Math.random(),
+    x: arenaSize.x * Math.random(),
+    y: arenaSize.y * Math.random(),
     radius:  Math.random() * (30 - 6) + 6, //hitbox
     icon: Math.floor(Math.random() * 8),
   };
+  console.log("spawmed");
   obstacles.push(obstacle);
+  spawned = true;
+  let promise = new Promise((resolve, reject) => {
+    setTimeout(() => {
+      resolve();
+    }, spawnTime);
+  }); //delay to reduce server load
+  promise.then(() => {
+    spawned = 1000;
+  });
 }, spawnTime); //currently 10 new obstacles per second
 //change tines depending on current number of obstacles 
 //to keep the number of obstacles on the map constant
@@ -140,6 +157,7 @@ setInterval(() => {
         if (projectile.owner == id) continue; //if projectile owner is the player, skip
         player.hp -= 10; //damage player
         if (player.hp <= 0){ 
+          players[projectile.owner].score += 1; //add score to player who killed the other player
           delete players[id];
         } //remove player
         projectiles.splice(i, 1); //removes projectile from array
@@ -151,6 +169,7 @@ setInterval(() => {
       if(!obstacle) continue; //if obstacle is null, skip
       const dist = Math.hypot(projectile.x - obstacle.x, projectile.y - obstacle.y); //distance between projectile and obstacle
       if (dist - obstacle.radius - projectile.radius < 1) { //collision
+        players[projectile.owner].hp += 3; //heal player
         projectiles.splice(i, 1); //removes projectile from array
         delete obstacles[x]; //removes obstacle from array
       }
@@ -177,9 +196,9 @@ setInterval(() => {
 
     if ( //if projectile is out of bounds
       projectile.x < 0 ||
-      projectile.x > arenaSize ||
+      projectile.x > arenaSize.x ||
       projectile.y < 0 ||
-      projectile.y > arenaSize
+      projectile.y > arenaSize.y
     ) {
       projectiles.splice(i, 1);
     }
@@ -199,5 +218,5 @@ setInterval(() => {
 
 
 server.listen(port, () =>
-  console.log(`Example app listening on port ${port}!`)
+  console.log(`Socket Server started , ${port}!`)
 );

@@ -2,7 +2,9 @@ const scoreBoard = document.getElementById("scoreBoard");
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
 
-const socket = io("ws://localhost:3000"); // initialize a new socket.io instance by passing the server object
+const socket = io(); // initialize a new socket.io instance by passing the server object
+
+console.log(socket);
 
 const devicePixelRatio = window.devicePixelRatio || 1;
 canvas.width = window.innerWidth * devicePixelRatio;
