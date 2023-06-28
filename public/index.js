@@ -4,8 +4,6 @@ const context = canvas.getContext("2d");
 
 const socket = io(); // initialize a new socket.io instance by passing the server object
 
-console.log(socket);
-
 const devicePixelRatio = window.devicePixelRatio || 1;
 canvas.width = window.innerWidth * devicePixelRatio;
 canvas.height = window.innerHeight * devicePixelRatio;

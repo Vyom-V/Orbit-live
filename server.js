@@ -96,7 +96,7 @@ io.on("connection", (socket) => {
 let spawnTime = 1000;
 let spawned = false;
 setInterval(() => {
-  spawnTime = obstacles.length * (spawnTime/2);
+  spawnTime = obstacles.length * (spawnTime);
   if (spawned) return;
   const obstacle = {
     x: arenaSize.x * Math.random(),
@@ -104,8 +104,8 @@ setInterval(() => {
     radius:  Math.random() * (30 - 6) + 6, //hitbox
     icon: Math.floor(Math.random() * 8),
   };
-  console.log("spawmed");
-  obstacles.push(obstacle);
+  // console.log("spawmed");/
+  // obstacles.push(obstacle);
   spawned = true;
   let promise = new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -113,9 +113,9 @@ setInterval(() => {
     }, spawnTime);
   }); //delay to reduce server load
   promise.then(() => {
-    spawned = 1000;
+    spawned = false;
   });
-}, spawnTime); //currently 10 new obstacles per second
+}, 1000); //currently 10 new obstacles per second
 //change tines depending on current number of obstacles 
 //to keep the number of obstacles on the map constant
 //and to prevent lag
