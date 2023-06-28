@@ -46,9 +46,6 @@ const bgImg = new Image();
 bgImg.src = "./Resources/Backgrounds/s1.png";
 bgImg.onload = function () {
   console.log("background loaded");
-  // animate();
-  // context.drawImage(bgImg, 0, 0);
-
   rockets.src = "./Resources/PNG/Effects/fire08.png";
 };
 rockets.onload = function () {
@@ -60,6 +57,7 @@ rockets.onload = function () {
 const frontendPlayers = {};
 let frontendProjectiles = new Array();
 let frontendObstacles = new Array();
+let frontendParticles = new Array();
 
 let started = false;
 let playerDied = false;
@@ -187,6 +185,15 @@ socket.on("updateObstacles", (backendObstacles) => {
   frontendObstacles = backendObstacles;
 });
 
+socket.on("hit", (backendHitLocation) => { 
+  // const hitSfx = new Audio("./Resources/Bonus/sfx_sounds_damage1.ogg");
+  // hitSfx.play();
+  for(let i=0;i<15;i++){
+    frontendParticles.push(new Particle(backendHitLocation));
+  }
+});
+  
+
 function start(name) {
   if (name == "") name = "Orbitter";
   socket.emit("new player", {
@@ -278,6 +285,23 @@ function animate() {
       frontendObstacle.radius * 2,
       frontendObstacle.radius * 2
     );
+  }
+
+  for (let i = 0; i < frontendParticles.length; i++) {
+    const frontendParticle = frontendParticles[i];
+    if (!frontendParticle) continue; //if obstacle is destroyed, skip it (undefined
+    if (
+      frontendParticle.x < cam.x ||
+      frontendParticle.x > cam.x + canvas.width ||
+      frontendParticle.y < cam.y ||
+      frontendParticle.y > cam.y + canvas.height
+    ) {
+      continue; //only render players that are in the viewport
+    }
+    if(frontendParticle.radius <= 1){
+      frontendParticles.splice(i, 1); //removes projectile from array
+    }
+    frontendParticle.update();
   }
 
   for (let id in frontendPlayers) {

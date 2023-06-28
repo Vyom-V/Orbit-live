@@ -1,20 +1,24 @@
 
-const friction = 0.99;
 class Particle {
   //same as projectile but no rotation
-  constructor(x, y, radius, color, velocity) {
+  constructor({x, y, type}) {
     this.x = x;
     this.y = y;
-    this.radius = radius;
-    this.color = color;
-    this.velocity = velocity; //object with x and y velocity rates to move at angle
+    this.radius = Math.random() * 7;
+    this.type = type;
+    this.velocity =  {
+            x: (Math.random() - 0.5) * (Math.random() * 6),
+            y: (Math.random() - 0.5) * (Math.random() * 6),
+          },
+    this.friction = 0.99;
+
   }
 
   draw() {
     context.drawImage(
-      meteors,
-      this.x,
-      this.y,
+      meteorIcons[this.type],
+      this.x - cam.x,
+      this.y - cam.y,
       this.radius * 2,
       this.radius * 2
     );
@@ -24,8 +28,8 @@ class Particle {
     
     this.radius -= 0.05; //shrinks particles
     this.draw();
-    this.velocity.x *= friction; //slows down particles
-    this.velocity.y *= friction;
+    this.velocity.x *= this.friction; //slows down particles
+    this.velocity.y *= this.friction;
     this.x = this.x + this.velocity.x;
     this.y = this.y + this.velocity.y;
   }

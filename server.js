@@ -105,7 +105,7 @@ setInterval(() => {
     icon: Math.floor(Math.random() * 8),
   };
   // console.log("spawmed");/
-  // obstacles.push(obstacle);
+  obstacles.push(obstacle);
   spawned = true;
   let promise = new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -155,6 +155,13 @@ setInterval(() => {
       const dist = Math.hypot(projectile.x - player.x, projectile.y - player.y); //distance between projectile and player
       if (dist - player.radius - projectile.radius < 1) { //collision
         if (projectile.owner == id) continue; //if projectile owner is the player, skip
+        
+        io.emit("hit",{ //render particles effect on client
+          x: projectile.x,
+          y: projectile.y,
+          type: 5,
+        })
+        
         player.hp -= 10; //damage player
         if (player.hp <= 0){ 
           players[projectile.owner].score += 1; //add score to player who killed the other player
@@ -169,6 +176,11 @@ setInterval(() => {
       if(!obstacle) continue; //if obstacle is null, skip
       const dist = Math.hypot(projectile.x - obstacle.x, projectile.y - obstacle.y); //distance between projectile and obstacle
       if (dist - obstacle.radius - projectile.radius < 1) { //collision
+        io.emit("hit",{ //render particles effect on client
+          x: projectile.x,
+          y: projectile.y,
+          type: 1,
+        })
         players[projectile.owner].hp += 3; //heal player
         projectiles.splice(i, 1); //removes projectile from array
         delete obstacles[x]; //removes obstacle from array
