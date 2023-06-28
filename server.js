@@ -8,7 +8,7 @@ const { Server } = require("socket.io"); // import socket.io
 const io = new Server(server, { pingInterval: 2000, pingTimeout: 5000 });
 
 const port = 3000;
-
+console.log(port);
 app.use(express.static("public")); // serves the static files
 
 app.get("/", (req, res) => res.sendFile("./index.html"));
