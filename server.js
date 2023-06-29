@@ -24,8 +24,6 @@ projectiles = new Array();
 
 io.on("connection", (socket) => {
   console.log("a user connected");
-
-  // let devicePixelRatio =
   
   socket.on('new player', (data) => {
     players[socket.id] = {
@@ -40,7 +38,6 @@ io.on("connection", (socket) => {
       devicePixelRatio: data.devicePixelRatio,
     };
   });
-
 
   //player movement and mouse movement
   socket.on("mouseMove", (data) => {
@@ -94,27 +91,16 @@ io.on("connection", (socket) => {
 });
 
 let spawnTime = 1000;
-let spawned = false;
+let maxSpawned = 1000;
 setInterval(() => {
-  spawnTime = obstacles.length * (spawnTime);
-  if (spawned) return;
+  if (maxSpawned < obstacles.length) return;
   const obstacle = {
     x: arenaSize.x * Math.random(),
     y: arenaSize.y * Math.random(),
     radius:  Math.random() * (30 - 6) + 6, //hitbox
     icon: Math.floor(Math.random() * 8),
   };
-  // console.log("spawmed");/
   obstacles.push(obstacle);
-  spawned = true;
-  let promise = new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve();
-    }, spawnTime);
-  }); //delay to reduce server load
-  promise.then(() => {
-    spawned = false;
-  });
 }, 1000); //currently 10 new obstacles per second
 //change tines depending on current number of obstacles 
 //to keep the number of obstacles on the map constant
@@ -181,7 +167,7 @@ setInterval(() => {
           y: projectile.y,
           type: 1,
         })
-        players[projectile.owner].hp += 3; //heal player
+        if( players[projectile.owner].hp < 150 ) players[projectile.owner].hp += 3; //heal player
         projectiles.splice(i, 1); //removes projectile from array
         delete obstacles[x]; //removes obstacle from array
       }
@@ -219,15 +205,6 @@ setInterval(() => {
   io.emit("updateProjectiles", projectiles);  
 
 }, 15); //60fps ticker function
-
-setInterval(() => {
-  for(let id in players){
-    const player = players[id];
-    if(!player) continue; //if player is null, skip
-    if(player.hp < 100) player.hp += 1;
-  }
-}, 1000);
-
 
 server.listen(port, () =>
   console.log(`Socket Server started , ${port}!`)
