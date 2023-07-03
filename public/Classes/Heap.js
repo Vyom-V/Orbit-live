@@ -314,3 +314,33 @@ class Heap {
     this.nodes_.length = 0;
   }
 }
+
+
+//implementation of minHeap
+// let minHeap = new Heap();
+
+// for (let id in backendPlayers) {
+//   const backendPlayer = backendPlayers[id];
+
+//   minHeap.insert(backendPlayer.score, backendPlayer.name);
+//   // console.log(minHeap.peekKey());
+  
+//   if(minHeap.getCount() < 5){
+//     minHeap.insert(backendPlayer.score, backendPlayer.name);
+//   }
+//   else {
+//     if(minHeap.peekKey() < backendPlayer.score){
+//       minHeap.remove();
+//       minHeap.insert(backendPlayer.score, backendPlayer.name);
+//     }
+//   }
+// }
+
+// let scores = [];
+// while(minHeap.getCount() > 0){
+//   // console.log(minHeap.remove());
+//   const userName = minHeap.peekKey();
+//   const playerScore = minHeap.remove();
+//   scores.push( { userName , playerScore } );
+//   minHeap.remove();
+// }

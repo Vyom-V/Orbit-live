@@ -80,45 +80,28 @@ socket.on("updatePlayers", (backendPlayers) => {
   if (cam.x > arenaSize.x - canvas.width) cam.x = arenaSize.x - canvas.width;
   if (cam.y > arenaSize.y - canvas.height) cam.y = arenaSize.y - canvas.height;
 
-  let minHeap = new Heap();
-
-  
-  for (let id in backendPlayers) {
-    const backendPlayer = backendPlayers[id];
-
-    minHeap.insert(backendPlayer.score, backendPlayer.name);
-    // console.log(minHeap.peekKey());
-    
-    if(minHeap.getCount() < 5){
-      minHeap.insert(backendPlayer.score, backendPlayer.name);
-    }
-    else {
-      if(minHeap.peekKey() < backendPlayer.score){
-        minHeap.remove();
-        minHeap.insert(backendPlayer.score, backendPlayer.name);
-      }
-    }
-  }
-
   let scores = [];
-  while(minHeap.getCount() > 0){
-    // console.log(minHeap.remove());
-    const userName = minHeap.peekKey();
-    const playerScore = minHeap.remove();
-    scores.push( { userName , playerScore } );
-    minHeap.remove();
+  for (let id in backendPlayers) {
+    scores.push({
+      playerScore: backendPlayers[id].score,
+      userName: backendPlayers[id].name,
+    });
   }
+  scores.sort((a, b) => b.playerScore - a.playerScore); //same as b > a
 
+  const scoreBoardSize = (scores.length > 5) ? 5 : scores.length; 
   const scoreBoard = document.getElementById("leaderBoard");
   scoreBoard.innerHTML = "";
-  for(let i = scores.length-1; i >=0 ; i--){
+  for( let i = 0; i < scoreBoardSize ; i++ ){
     const scoreBoardElem = document.createElement("li");
     const scoreBoardName = document.createElement("mark");
     const scoreBoardScore = document.createElement("small");
+    console.log(scores[i].playerScore);
     scoreBoardName.innerHTML = scores[i].playerScore;
     scoreBoardScore.innerHTML = scores[i].userName;
     scoreBoardElem.appendChild(scoreBoardName);
     scoreBoardElem.appendChild(scoreBoardScore);
+    scoreBoardElem.classList.add("noSelect");
     scoreBoard.appendChild(scoreBoardElem);
   }
 
@@ -136,6 +119,7 @@ socket.on("updatePlayers", (backendPlayers) => {
       if (frontendPlayers[id]) {
         //if player isnt in viewport anymore, remove them
         frontendPlayers[id].nameTag.elem.remove();
+        frontendPlayers[id].hpBar.elem.remove();
         delete frontendPlayers[id];
       }
       continue; //only render players that are in the viewport
@@ -165,15 +149,22 @@ socket.on("updatePlayers", (backendPlayers) => {
       frontendPlayers[id].velocity = backendPlayer.velocity;
       frontendPlayers[id].hp = backendPlayer.hp;
     }
+  }
+});
 
-    //optimise this later
-    for (const id in frontendPlayers) {
-      if (!backendPlayers[id]) {
-        frontendPlayers[id].nameTag.elem.remove();
-        frontendPlayers[id].hpBar.elem.remove();
-        delete frontendPlayers[id];
-      }
-    }
+socket.on("playerDisconnected", (id) => {
+  if (frontendPlayers[id]) {
+    frontendPlayers[id].nameTag.elem.remove();
+    frontendPlayers[id].hpBar.elem.remove();
+    delete frontendPlayers[id];
+  }
+});
+
+socket.on("playerKilled", (id) => {
+  if (frontendPlayers[id]) {
+    frontendPlayers[id].nameTag.elem.remove();
+    frontendPlayers[id].hpBar.elem.remove();
+    delete frontendPlayers[id];
   }
 });
 

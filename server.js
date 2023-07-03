@@ -13,17 +13,13 @@ app.use(express.static("public")); // serves the static files
 
 app.get("/", (req, res) => res.sendFile("./index.html"));
 
-const arenaSize ={
-  x: 5300,
-  y: 3000,
-};
-
-players = {};
-obstacles = new Array();
-projectiles = new Array();
+const arenaSize ={ x: 5300,y: 3000 };
+let players = {};
+let obstacles = new Array();
+let projectiles = new Array();
 
 io.on("connection", (socket) => {
-  console.log("a user connected");
+  console.log("a user joined");
   
   socket.on('new player', (data) => {
     players[socket.id] = {
@@ -34,7 +30,7 @@ io.on("connection", (socket) => {
       hp: 100,
       icon: Math.floor(Math.random() * 12),
       name: data.name,
-      score: 0,
+      score: 100,
       devicePixelRatio: data.devicePixelRatio,
     };
   });
@@ -85,36 +81,24 @@ io.on("connection", (socket) => {
   //when a player disconnects
   socket.on("disconnect", () => {
     console.log("user disconnected");
+    io.emit("playerDisconnected", socket.id)
     delete players[socket.id];
   });
 
 });
 
-let spawnTime = 1000;
-let maxSpawned = 1000;
-setInterval(() => {
-  if (maxSpawned < obstacles.length) return;
-  const obstacle = {
-    x: arenaSize.x * Math.random(),
-    y: arenaSize.y * Math.random(),
-    radius:  Math.random() * (30 - 6) + 6, //hitbox
-    icon: Math.floor(Math.random() * 8),
-  };
-  obstacles.push(obstacle);
-}, 1000); //currently 10 new obstacles per second
-//change tines depending on current number of obstacles 
-//to keep the number of obstacles on the map constant
-//and to prevent lag
-
-
-
 
 setInterval(() => {
-  
+  io.emit("updateProjectiles", projectiles);  
   io.emit("updatePlayers", players);
   io.emit("updateObstacles", obstacles);
 
-  for(let id in players){
+  //collision detection between players and obstacles
+  // O(n*m or n^2) complexity 
+  // n = number of players ( max 10 )
+  // m = number of obstacles ( max 1000 )
+
+  for(let id in players){ 
     const player = players[id];
     if(!player) continue; //if player is null, skip
 
@@ -133,12 +117,17 @@ setInterval(() => {
 
   }
   
-
+  //collision detection between projectiles and (players or obstacles)
+  // O(n*m or n^2) complexity
+  // n = number of projectiles ( max depends on players )
+  // m = number of obstacles ( max 1000 ) + number of players ( max 10 )
   for (let i = 0; i < projectiles.length; i++) {
     const projectile = projectiles[i];
+
     for(let id in players){
       const player = players[id];
       const dist = Math.hypot(projectile.x - player.x, projectile.y - player.y); //distance between projectile and player
+      
       if (dist - player.radius - projectile.radius < 1) { //collision
         if (projectile.owner == id) continue; //if projectile owner is the player, skip
         
@@ -150,7 +139,8 @@ setInterval(() => {
         
         player.hp -= 10; //damage player
         if (player.hp <= 0){ 
-          players[projectile.owner].score += 1; //add score to player who killed the other player
+          players[projectile.owner].score += Math.round(player.score*0.7); //add score to player who killed the other player
+          io.emit("playerKilled", id); 
           delete players[id];
         } //remove player
         projectiles.splice(i, 1); //removes projectile from array
@@ -167,6 +157,7 @@ setInterval(() => {
           y: projectile.y,
           type: 1,
         })
+        players[projectile.owner].score += 10; 
         if( players[projectile.owner].hp < 150 ) players[projectile.owner].hp += 3; //heal player
         projectiles.splice(i, 1); //removes projectile from array
         delete obstacles[x]; //removes obstacle from array
@@ -174,20 +165,18 @@ setInterval(() => {
     }
 
     if(!projectile) continue; //if projectile is null, skip
+    if(!players[projectile.owner]) return; //if player is null, skip
 
     //update projectile position
-    projectile.x +=
-      projectile.velocity.x * 10;
-    projectile.y +=
-      projectile.velocity.y * 10;
+    projectile.x += projectile.velocity.x * 10;
+    projectile.y += projectile.velocity.y * 10;
 
-      const dist = 1000;
-      if(!players[projectile.owner]) return; //if player is null, skip
-    if ( //if projectile is out of bounds
-      projectile.x - players[projectile.owner].x < -dist ||
-      projectile.x - players[projectile.owner].x > dist ||
-      projectile.y - players[projectile.owner].y < -dist ||
-      projectile.y - players[projectile.owner].y > dist
+    const maxDistFromOwner = 1000;
+    if ( //if projectile is out of maxDistFromOwner
+      projectile.x - players[projectile.owner].x < -maxDistFromOwner ||
+      projectile.x - players[projectile.owner].x > maxDistFromOwner ||
+      projectile.y - players[projectile.owner].y < -maxDistFromOwner ||
+      projectile.y - players[projectile.owner].y > maxDistFromOwner
     ) {
       projectiles.splice(i, 1);
     }
@@ -202,9 +191,26 @@ setInterval(() => {
     }
 
   }
-  io.emit("updateProjectiles", projectiles);  
 
 }, 15); //60fps ticker function
+
+//Obstacle spawner
+let spawnTime = 1000;
+let maxSpawned = 1000;
+setInterval(() => {
+  if (maxSpawned < obstacles.length) return;
+  const obstacle = {
+    x: arenaSize.x * Math.random(),
+    y: arenaSize.y * Math.random(),
+    radius:  Math.random() * (30 - 6) + 6, //hitbox
+    icon: Math.floor(Math.random() * 8),
+  };
+  obstacles.push(obstacle);
+}, 1000); //currently 10 new obstacles per second
+//change tines depending on current number of obstacles 
+//to keep the number of obstacles on the map constant
+//and to prevent lag
+
 
 server.listen(port, () =>
   console.log(`Socket Server started , ${port}!`)
