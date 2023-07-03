@@ -160,7 +160,7 @@ setInterval(() => {
         players[projectile.owner].score += 10; 
         if( players[projectile.owner].hp < 150 ) players[projectile.owner].hp += 3; //heal player
         projectiles.splice(i, 1); //removes projectile from array
-        delete obstacles[x]; //removes obstacle from array
+        obstacles.splice(x,1); //removes obstacle from array
       }
     }
 
@@ -206,7 +206,7 @@ setInterval(() => {
     icon: Math.floor(Math.random() * 8),
   };
   obstacles.push(obstacle);
-}, 1000); //currently 10 new obstacles per second
+}, 1000); //currently 1 new obstacles per second, max 1000
 //change tines depending on current number of obstacles 
 //to keep the number of obstacles on the map constant
 //and to prevent lag
