@@ -1,3 +1,6 @@
+const Rectangle = require( "./collisionDetectUtils/Rectangle.js");
+const QuadTree = require( "./collisionDetectUtils/QuadTree.js");
+
 const express = require("express");
 const app = express();
 
@@ -17,6 +20,15 @@ const arenaSize ={ x: 5300,y: 3000 };
 let players = {};
 let obstacles = new Array();
 let projectiles = new Array();
+
+const arenaRect = new Rectangle(
+  arenaSize.x/2,
+  arenaSize.y/2,
+  arenaSize.x/2,
+  arenaSize.y/2 
+);
+
+let qTree = new QuadTree(arenaRect,2);
 
 io.on("connection", (socket) => {
   console.log("a user joined");
@@ -147,9 +159,13 @@ setInterval(() => {
       }
     }
 
-    for(let x = 0; x < obstacles.length; x++){
-      const obstacle = obstacles[x];
-      if(!obstacle) continue; //if obstacle is null, skip
+    //collision detection between projectiles and obstacles
+    // O(n*logm) complexity
+    // n = number of projectiles ( max depends on players )
+    // m = number of obstacles ( max 1000 )
+    const pointRange = new Rectangle(projectile.x, projectile.y, 30, 30);
+    let pointsInRange = qTree.nearbyPoints(pointRange,[])
+    pointsInRange.forEach((obstacle) => {
       const dist = Math.hypot(projectile.x - obstacle.x, projectile.y - obstacle.y); //distance between projectile and obstacle
       if (dist - obstacle.radius - projectile.radius < 1) { //collision
         io.emit("hit",{ //render particles effect on client
@@ -160,9 +176,10 @@ setInterval(() => {
         players[projectile.owner].score += 10; 
         if( players[projectile.owner].hp < 150 ) players[projectile.owner].hp += 3; //heal player
         projectiles.splice(i, 1); //removes projectile from array
-        obstacles.splice(x,1); //removes obstacle from array
+        qTree.delete(obstacle); //removes obstacle from array
+        // obstacles.splice(x,1); 
       }
-    }
+    }); //collision detection with Obstacles
 
     if(!projectile) continue; //if projectile is null, skip
     if(!players[projectile.owner]) return; //if player is null, skip
@@ -205,6 +222,7 @@ setInterval(() => {
     radius:  Math.random() * (30 - 6) + 6, //hitbox
     icon: Math.floor(Math.random() * 8),
   };
+  qTree.insert(obstacle);
   obstacles.push(obstacle);
 }, 1000); //currently 1 new obstacles per second, max 1000
 //change tines depending on current number of obstacles 

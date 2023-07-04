@@ -96,7 +96,6 @@ socket.on("updatePlayers", (backendPlayers) => {
     const scoreBoardElem = document.createElement("li");
     const scoreBoardName = document.createElement("mark");
     const scoreBoardScore = document.createElement("small");
-    console.log(scores[i].playerScore);
     scoreBoardName.innerHTML = scores[i].playerScore;
     scoreBoardScore.innerHTML = scores[i].userName;
     scoreBoardElem.appendChild(scoreBoardName);
