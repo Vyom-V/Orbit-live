@@ -173,6 +173,11 @@ socket.on("updateProjectiles", (backendProjectiles) => {
 
 socket.on("updateObstacles", (backendObstacles) => {
   frontendObstacles = backendObstacles;
+  // console.log(frontendObstacles.insert({x: 100 * Math.random(), y: 100 * Math.random()}));
+});
+
+socket.on("qtree", (QuadTree) => {
+  console.log(QuadTree);
 });
 
 socket.on("hit", (backendHitLocation) => { 

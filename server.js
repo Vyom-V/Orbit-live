@@ -106,7 +106,7 @@ setInterval(() => {
   io.emit("updateObstacles", obstacles);
 
   //collision detection between players and obstacles
-  // O(n*m or n^2) complexity 
+  // O(nLogm) complexity 
   // n = number of players ( max 10 )
   // m = number of obstacles ( max 1000 )
 
@@ -114,9 +114,10 @@ setInterval(() => {
     const player = players[id];
     if(!player) continue; //if player is null, skip
 
-    for(let i=0;i<obstacles.length;i++){
-      const obstacle = obstacles[i];
-      if(!obstacle) continue; //if obstacle is null, skip
+    let playerArea = new Rectangle(player.x,player.y,30,30);
+    let pointsInRange = [];
+    pointsInRange = qTree.nearbyPoints(playerArea,pointsInRange);
+    pointsInRange.forEach((obstacle) => {
       const dist = Math.hypot(player.x - obstacle.x, player.y - obstacle.y); //distance between player and obstacle
       if (dist - obstacle.radius - player.radius < 1) { //collision
         //tick damage
@@ -125,8 +126,7 @@ setInterval(() => {
           delete players[id];
         } //remove player
       }
-    }
-
+    });
   }
   
   //collision detection between projectiles and (players or obstacles)
