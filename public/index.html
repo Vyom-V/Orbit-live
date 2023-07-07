@@ -126,6 +126,7 @@
         start(name);
         document.getElementById("startOverlay").style.display = "none";
         document.getElementById("endScreen").style.display = "none";
+        document.querySelector("canvas").requestFullscreen();
       };
       const restart = () => {
         const name = document.getElementById("nameR").value;

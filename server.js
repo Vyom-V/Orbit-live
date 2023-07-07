@@ -1,6 +1,7 @@
 const Rectangle = require( "./collisionDetectUtils/Rectangle.js");
 const QuadTree = require( "./collisionDetectUtils/QuadTree.js");
 
+const uuid = require('short-uuid');
 const express = require("express");
 const app = express();
 
@@ -18,7 +19,7 @@ app.get("/", (req, res) => res.sendFile("./index.html"));
 
 const arenaSize ={ x: 5300,y: 3000 };
 let players = {};
-let obstacles = new Array();
+let obstacles = {};
 let projectiles = new Array();
 
 const arenaRect = new Rectangle(
@@ -177,7 +178,7 @@ setInterval(() => {
         if( players[projectile.owner].hp < 150 ) players[projectile.owner].hp += 3; //heal player
         projectiles.splice(i, 1); //removes projectile from array
         qTree.delete(obstacle); //removes obstacle from array
-        // obstacles.splice(x,1); 
+        delete obstacles[obstacle.id]; 
       }
     }); //collision detection with Obstacles
 
@@ -216,14 +217,16 @@ let spawnTime = 1000;
 let maxSpawned = 1000;
 setInterval(() => {
   if (maxSpawned < obstacles.length) return;
+  const id = uuid.generate();
   const obstacle = {
+    id: id,
     x: arenaSize.x * Math.random(),
     y: arenaSize.y * Math.random(),
     radius:  Math.random() * (30 - 6) + 6, //hitbox
     icon: Math.floor(Math.random() * 8),
   };
   qTree.insert(obstacle);
-  obstacles.push(obstacle);
+  obstacles[id] = obstacle;
 }, 1000); //currently 1 new obstacles per second, max 1000
 //change tines depending on current number of obstacles 
 //to keep the number of obstacles on the map constant

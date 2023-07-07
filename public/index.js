@@ -8,8 +8,6 @@ const devicePixelRatio = window.devicePixelRatio || 1;
 canvas.width = window.innerWidth * devicePixelRatio;
 canvas.height = window.innerHeight * devicePixelRatio;
 
-let score = 0;
-scoreBoard.innerHTML = "Score: " + score;
 
 let playerIcons = new Array(12);
 
@@ -56,7 +54,7 @@ rockets.onload = function () {
 
 const frontendPlayers = {};
 let frontendProjectiles = new Array();
-let frontendObstacles = new Array();
+let frontendObstacles = {};
 let frontendParticles = new Array();
 
 let started = false;
@@ -173,11 +171,6 @@ socket.on("updateProjectiles", (backendProjectiles) => {
 
 socket.on("updateObstacles", (backendObstacles) => {
   frontendObstacles = backendObstacles;
-  // console.log(frontendObstacles.insert({x: 100 * Math.random(), y: 100 * Math.random()}));
-});
-
-socket.on("qtree", (QuadTree) => {
-  console.log(QuadTree);
 });
 
 socket.on("hit", (backendHitLocation) => { 
@@ -261,8 +254,9 @@ function animate() {
     context.restore();
   }
 
-  for (let i = 0; i < frontendObstacles.length; i++) {
-    const frontendObstacle = frontendObstacles[i];
+  // for (let i = 0; i < frontendObstacles.length; i++) {
+  for(let id in frontendObstacles){ 
+    const frontendObstacle = frontendObstacles[id];
     if (!frontendObstacle) continue; //if obstacle is destroyed, skip it (undefined
     if (
       frontendObstacle.x < cam.x ||
