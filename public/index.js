@@ -8,9 +8,9 @@ const devicePixelRatio = window.devicePixelRatio || 1;
 canvas.width = window.innerWidth * devicePixelRatio;
 canvas.height = window.innerHeight * devicePixelRatio;
 
+// ****** Load Images ****** //
 
 let playerIcons = new Array(12);
-
 let imagesLoaded = 0;
 for (let i = 0; i < 12; i++) {
   playerIcons[i] = new Image();
@@ -24,7 +24,6 @@ for (let i = 0; i < 12; i++) {
 }
 
 let meteorIcons = new Array(8);
-
 let meteorCnt = 0;
 for (let i = 0; i < 8; i++) {
   meteorIcons[i] = new Image();
@@ -50,16 +49,20 @@ rockets.onload = function () {
   shield.src = "./Resources/PNG/Effects/shield3.png";
 };
 
-/* ********************************************************************************** */
+/* ********  Global Variables  ********* */
 
 const frontendPlayers = {};
 let frontendProjectiles = new Array();
 let frontendObstacles = {};
 let frontendParticles = new Array();
-
 let started = false;
 let playerDied = false;
+let playerScore = 100;
 let cam = { x: 0, y: 0 };
+
+
+/* ********  Socket Connection and Server Response  ********* */
+
 const arenaSize ={
   x: 5300,
   y: 3000,
@@ -80,6 +83,7 @@ socket.on("updatePlayers", (backendPlayers) => {
 
   let scores = [];
   for (let id in backendPlayers) {
+    if(socket.id == id) playerScore = backendPlayers[id].score; //update this player score
     scores.push({
       playerScore: backendPlayers[id].score,
       userName: backendPlayers[id].name,
@@ -162,6 +166,7 @@ socket.on("playerKilled", (id) => {
     frontendPlayers[id].nameTag.elem.remove();
     frontendPlayers[id].hpBar.elem.remove();
     delete frontendPlayers[id];
+    console.log("player killed");
   }
 });
 
@@ -181,8 +186,10 @@ socket.on("hit", (backendHitLocation) => {
   }
 });
   
+/* ******** Basic Game Functions ********* */
 
-function start(name) {
+
+function startCanvas(name) {
   if (name == "") name = "Orbitter";
   socket.emit("new player", {
     devicePixelRatio,
@@ -192,8 +199,8 @@ function start(name) {
   animate();
 }
 
-function reset(name) {
-  start(name);
+function resetCanvas(name) {
+  startCanvas(name);
   const endScreen = document.getElementById("endScreen");
   endScreen.style.display = "none";
   score = 0;
@@ -206,15 +213,18 @@ function gameOver() {
   const gameoverSfx = new Audio("./Resources/Bonus/sfx_lose.ogg");
   gameoverSfx.play();
   const finalScore = document.getElementById("finalScore");
-  finalScore.innerHTML = "Your score was : " + score;
+  finalScore.innerHTML = "You Scored: " + playerScore;
   const endScreen = document.getElementById("endScreen");
   endScreen.style.display = "block";
 }
 
+
+/* ********  Animation Loop  ********* */
+
 let animationId;
 function animate() {
   animationID = requestAnimationFrame(animate);
-  if (start && playerDied) {
+  if (started && playerDied) {
     gameOver();
     cancelAnimationFrame(animationID); //stops animation loop at current frame
     return;

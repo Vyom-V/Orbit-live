@@ -51,6 +51,7 @@ io.on("connection", (socket) => {
   //player movement and mouse movement
   socket.on("mouseMove", (data) => {
     const player = players[socket.id];
+    if (!player) return;
     player.angle = data;
   });
 
@@ -213,10 +214,11 @@ setInterval(() => {
 }, 15); //60fps ticker function
 
 //Obstacle spawner
-let spawnTime = 1000;
 let maxSpawned = 1000;
 setInterval(() => {
-  if (maxSpawned < obstacles.length) return;
+  const obstacleCount = Object.keys(obstacles).length;
+  console.log(obstacleCount);
+  if (maxSpawned < obstacleCount) return;
   const id = uuid.generate();
   const obstacle = {
     id: id,

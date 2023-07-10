@@ -4,39 +4,41 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Orbit Wars 💫</title>
-    <link rel="icon" type="image/x-icon" href="./Resources/PNG/Enemies/enemyBlack1.png">
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="./Resources/PNG/Enemies/enemyBlack1.png"
+    />
     <link rel="stylesheet" href="index.css" />
     <link rel="stylesheet" href="leaderBoard.css" />
   </head>
   <body>
-    <div id="scoreBoard"></div>
-    <div class="leaderBoard noSelect">
-      <div class="leaderboard">
-        <h1>
-          <svg class="ico-cup">
-            <use xlink:href="#cup"></use>
-          </svg>
-          Leaderboard
-        </h1>
-        <ol id="leaderBoard">
-          
-        </ol>
-      </div>
+    <div id="gameOverlay">
+      <div class="leaderBoard noSelect">
+        <div class="leaderboard">
+          <h1>
+            <svg class="ico-cup">
+              <use xlink:href="#cup"></use>
+            </svg>
+            Leaderboard
+          </h1>
+          <ol id="leaderBoard"></ol>
+        </div>
 
-      <svg style="display: none">
-        <symbol
-          id="cup"
-          x="0px"
-          y="0px"
-          width="25px"
-          height="26px"
-          viewBox="0 0 25 26"
-          enable-background="new 0 0 25 26"
-          xml:space="preserve"
-        >
-          <path
-            fill="#F26856"
-            d="M21.215,1.428c-0.744,0-1.438,0.213-2.024,0.579V0.865c0-0.478-0.394-0.865-0.88-0.865H6.69
+        <svg style="display: none">
+          <symbol
+            id="cup"
+            x="0px"
+            y="0px"
+            width="25px"
+            height="26px"
+            viewBox="0 0 25 26"
+            enable-background="new 0 0 25 26"
+            xml:space="preserve"
+          >
+            <path
+              fill="#F26856"
+              d="M21.215,1.428c-0.744,0-1.438,0.213-2.024,0.579V0.865c0-0.478-0.394-0.865-0.88-0.865H6.69
       C6.204,0,5.81,0.387,5.81,0.865v1.142C5.224,1.641,4.53,1.428,3.785,1.428C1.698,1.428,0,3.097,0,5.148
       C0,7.2,1.698,8.869,3.785,8.869h1.453c0.315,0,0.572,0.252,0.572,0.562c0,0.311-0.257,0.563-0.572,0.563
       c-0.486,0-0.88,0.388-0.88,0.865c0,0.478,0.395,0.865,0.88,0.865c0.421,0,0.816-0.111,1.158-0.303
@@ -53,60 +55,61 @@
       C13.195,16.578,13.344,17.436,13.673,18.301z M12.5,14.276c-2.856,0-4.93-2.638-4.93-6.273V1.73h9.859v6.273
       C17.43,11.638,15.357,14.276,12.5,14.276z M21.215,7.138h-1.452c-0.197,0-0.39,0.024-0.572,0.07v-2.06
       c0-1.097,0.908-1.99,2.024-1.99c1.117,0,2.025,0.893,2.025,1.99C23.241,6.246,22.333,7.138,21.215,7.138z"
-          />
-        </symbol>
-      </svg>
-    </div>
-    <canvas></canvas>
-    <div id="endScreen">
-      <div class="container">
-        <h1>GAME OVER!</h1>
-        <p id="finalScore"></p>
-        <div class="inputBox">
-          <input
-            id="nameR"
-            type="text"
-            autocomplete="off"
-            placeholder="Enter your name"
-          />
-        </div>
-        <button onclick="restart()" class="glowing-btn">
-          <span class="glowing-txt"
-            >RES<span class="faulty-letter">T</span>ART</span
-          >
-        </button>
+            />
+          </symbol>
+        </svg>
       </div>
-    </div>
-    <div id="startOverlay">
-      <div class="container">
-        <h1>ORBIT💫WARS</h1>
-        <p>Use WASD to move👽</p>
-        <div class="inputBox">
-          <input
-            id="nameS"
-            type="text"
-            autocomplete="off"
-            placeholder="Enter your name"
-          />
+      <canvas></canvas>
+      <div id="endScreen">
+        <div class="container">
+          <h1>GAME OVER!</h1>
+          <p id="finalScore"></p>
+          <div class="inputBox">
+            <input
+              id="nameR"
+              type="text"
+              autocomplete="off"
+              placeholder="Enter your name"
+            />
+          </div>
+          <button onclick="restart()" class="glowing-btn">
+            <span class="glowing-txt"
+              >RES<span class="faulty-letter">T</span>ART</span
+            >
+          </button>
         </div>
-        <button onclick="startGame()" class="glowing-btn">
-          <span class="glowing-txt"
-            >S<span class="faulty-letter">T</span>ART</span
-          >
-        </button>
+      </div>
+      <div id="startOverlay">
+        <div class="container">
+          <h1>ORBIT💫WARS</h1>
+          <p>Use WASD to move👽</p>
+          <div class="inputBox">
+            <input
+              id="nameS"
+              type="text"
+              autocomplete="off"
+              placeholder="Enter your name"
+            />
+          </div>
+          <button onclick="startGame()" class="glowing-btn">
+            <span class="glowing-txt"
+              >S<span class="faulty-letter">T</span>ART</span
+            >
+          </button>
+        </div>
       </div>
     </div>
     <script src="socket.io/socket.io.js"></script>
     <script
-    src="https://cdn.socket.io/4.6.0/socket.io.min.js"
-    integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
-    crossorigin="anonymous"
+      src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+      integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
+      crossorigin="anonymous"
     ></script>
     <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/gsap.min.js"
-    integrity="sha512-qF6akR/fsZAB4Co1QDDnUXWnaQseLGXoniuSuSlPQK6+aWhlMZcHzkasCSlnWoe+TJuudlka1/IQ01Dnhgq95g=="
-    crossorigin="anonymous"
-    referrerpolicy="no-referrer"
+      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/gsap.min.js"
+      integrity="sha512-qF6akR/fsZAB4Co1QDDnUXWnaQseLGXoniuSuSlPQK6+aWhlMZcHzkasCSlnWoe+TJuudlka1/IQ01Dnhgq95g=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
     ></script>
     <script src="./Classes/Node.js"></script>
     <script src="./Classes/Heap.js"></script>
@@ -115,24 +118,25 @@
     <script src="./Classes/Player.js"></script>
     <script src="./Classes/Projectiles.js"></script>
     <script src="./Classes/Particle.js"></script>
+    <script src="./EventListeners/Resize.js"></script>
     <script src="./EventListeners/Controller.js"></script>
     <script src="./EventListeners/Shoot.js"></script>
     <script src="index.js"></script>
     <script>
       const startGame = () => {
+        document.getElementById("gameOverlay").requestFullscreen();
         const name = document.getElementById("nameS").value;
         const startSfx = new Audio("./Resources/Bonus/sfx_shieldUp.ogg");
         startSfx.play();
-        start(name);
+        startCanvas(name);
         document.getElementById("startOverlay").style.display = "none";
         document.getElementById("endScreen").style.display = "none";
-        document.querySelector("canvas").requestFullscreen();
       };
       const restart = () => {
         const name = document.getElementById("nameR").value;
         const startSfx = new Audio("./Resources/Bonus/sfx_shieldUp.ogg");
         startSfx.play();
-        reset(name);
+        resetCanvas(name);
         document.getElementById("startOverlay").style.display = "none";
         document.getElementById("endScreen").style.display = "none";
       };

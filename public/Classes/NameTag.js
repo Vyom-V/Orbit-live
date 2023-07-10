@@ -16,7 +16,7 @@ class NameTag{
         this.elem.style.zIndex = "1";
         this.elem.style.left = this.x - 10 + "px";
         this.elem.style.top = this.y -10 + "px";
-        document.body.appendChild(this.elem);
+        document.getElementById("gameOverlay").appendChild(this.elem);
         this.elem.classList.add("noSelect"); /* disables text selction */
         
     }
