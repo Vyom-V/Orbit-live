@@ -157,6 +157,7 @@ socket.on("updatePlayers", (backendPlayers) => {
       frontendPlayers[id].y = backendPlayer.y;
       frontendPlayers[id].velocity = backendPlayer.velocity;
       frontendPlayers[id].hp = backendPlayer.hp;
+      frontendPlayers[id].angle = backendPlayer.angle;
       //update angle on client side to avoid jittering
     }
   }

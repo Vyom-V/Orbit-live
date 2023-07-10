@@ -71,6 +71,7 @@ io.on("connection", (socket) => {
       players[socket.id].x = playerLocation.x;
       players[socket.id].y = playerLocation.y;
       players[socket.id].hasJoined = true;
+      players[socket.id].score = 100;
     }catch(e){
       console.log(e);
     }
