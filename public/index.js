@@ -127,6 +127,8 @@ socket.on("updatePlayers", (backendPlayers) => {
     }
 
     if (!frontendPlayers[id]) {
+      if(!backendPlayer.hasJoined) continue;
+
       frontendPlayers[id] = new Player(
         backendPlayer.x,
         backendPlayer.y,
@@ -143,12 +145,19 @@ socket.on("updatePlayers", (backendPlayers) => {
       //   duration: 0.015,
       //   ease: "linear",
       // });
-
+      if(!backendPlayer.hasJoined) {
+        if(frontendPlayers[id]) {
+          frontendPlayers[id].nameTag.elem.remove();
+          frontendPlayers[id].hpBar.elem.remove();
+          delete frontendPlayers[id];
+        }
+        continue;
+      }
       frontendPlayers[id].x = backendPlayer.x;
       frontendPlayers[id].y = backendPlayer.y;
-      frontendPlayers[id].angle = backendPlayer.angle;
       frontendPlayers[id].velocity = backendPlayer.velocity;
       frontendPlayers[id].hp = backendPlayer.hp;
+      //update angle on client side to avoid jittering
     }
   }
 });
@@ -163,10 +172,18 @@ socket.on("playerDisconnected", (id) => {
 
 socket.on("playerKilled", (id) => {
   if (frontendPlayers[id]) {
+    if(id == socket.id) {
+      playerDied = true;
+      //sound effect
+      const gameOverSound = new Audio("./Resources/Bonus/gameover.wav");
+      gameOverSound.play();
+      gameOver();
+      cancelAnimationFrame(animationID); //stops animation loop at current frame
+      return;
+    }
     frontendPlayers[id].nameTag.elem.remove();
     frontendPlayers[id].hpBar.elem.remove();
     delete frontendPlayers[id];
-    console.log("player killed");
   }
 });
 
@@ -174,9 +191,19 @@ socket.on("updateProjectiles", (backendProjectiles) => {
   frontendProjectiles = backendProjectiles;
 });
 
-socket.on("updateObstacles", (backendObstacles) => {
+socket.on("getObstacles", (backendObstacles) => {
   frontendObstacles = backendObstacles;
 });
+socket.on("newObstacle", (obstacle) => {
+  frontendObstacles[obstacle.id] = obstacle;
+});
+socket.on("removeObstacle", (id) => {
+  if(frontendObstacles[id]){
+    console.log("removing obstacle");
+    delete frontendObstacles[id];
+  }
+});
+
 
 socket.on("hit", (backendHitLocation) => { 
   // const hitSfx = new Audio("./Resources/Bonus/sfx_sounds_damage1.ogg");
@@ -203,8 +230,6 @@ function resetCanvas(name) {
   startCanvas(name);
   const endScreen = document.getElementById("endScreen");
   endScreen.style.display = "none";
-  score = 0;
-  scoreBoard.innerHTML = "Score: " + score;
   playerDied = false;
   animate();
 }
@@ -224,11 +249,6 @@ function gameOver() {
 let animationId;
 function animate() {
   animationID = requestAnimationFrame(animate);
-  if (started && playerDied) {
-    gameOver();
-    cancelAnimationFrame(animationID); //stops animation loop at current frame
-    return;
-  }
 
   context.fillRect(0, 0, canvas.width, canvas.height); //clears canvas each time to redraw player and projectiles in new position
 
@@ -264,7 +284,6 @@ function animate() {
     context.restore();
   }
 
-  // for (let i = 0; i < frontendObstacles.length; i++) {
   for(let id in frontendObstacles){ 
     const frontendObstacle = frontendObstacles[id];
     if (!frontendObstacle) continue; //if obstacle is destroyed, skip it (undefined

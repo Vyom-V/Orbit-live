@@ -123,10 +123,10 @@
     <script src="./EventListeners/Shoot.js"></script>
     <script src="index.js"></script>
     <script>
+      const startSfx = new Audio("./Resources/Bonus/start.wav");
       const startGame = () => {
-        document.getElementById("gameOverlay").requestFullscreen();
+        // document.getElementById("gameOverlay").requestFullscreen();
         const name = document.getElementById("nameS").value;
-        const startSfx = new Audio("./Resources/Bonus/sfx_shieldUp.ogg");
         startSfx.play();
         startCanvas(name);
         document.getElementById("startOverlay").style.display = "none";
@@ -134,7 +134,6 @@
       };
       const restart = () => {
         const name = document.getElementById("nameR").value;
-        const startSfx = new Audio("./Resources/Bonus/sfx_shieldUp.ogg");
         startSfx.play();
         resetCanvas(name);
         document.getElementById("startOverlay").style.display = "none";

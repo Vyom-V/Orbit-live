@@ -20,45 +20,76 @@ app.get("/", (req, res) => res.sendFile("./index.html"));
 const arenaSize ={ x: 5300,y: 3000 };
 let players = {};
 let obstacles = {};
+const arenaRect = new Rectangle(arenaSize.x/2,arenaSize.y/2,arenaSize.x/2,arenaSize.y/2 );
+let qTree = new QuadTree(arenaRect,2);
 let projectiles = new Array();
 
-const arenaRect = new Rectangle(
-  arenaSize.x/2,
-  arenaSize.y/2,
-  arenaSize.x/2,
-  arenaSize.y/2 
-);
 
-let qTree = new QuadTree(arenaRect,2);
+const generatePlayerLocation = () => {
+    const tempLoc = {};
+    let badSpawn = false;
+    do{
+      badSpawn = false;
+      tempLoc.x = 3000 * Math.random() + 50;
+      tempLoc.y = 2000 * Math.random() + 50;
+      const nearbyObstacles = qTree.nearbyPoints(new Rectangle(tempLoc.x, tempLoc.y, 30, 30));
+      nearbyObstacles.forEach((obstacle) => {
+        const dist = Math.hypot(tempLoc.x - obstacle.x, tempLoc.y - obstacle.y); //distance between tempLoc and obstacle
+        if (dist - obstacle.radius - tempLoc.radius < 1) { //collision
+          badSpawn = true;
+        }
+      });
+      if(!badSpawn) return tempLoc;
+    }
+    while(badSpawn)
+}
 
 io.on("connection", (socket) => {
   console.log("a user joined");
   
+  players[socket.id] = {
+    x: 0,
+    y: 0,
+    radius: 20, //hitbox
+    angle: -1.5708,
+    hp: 100,
+    icon: Math.floor(Math.random() * 12),
+    name: 'Orbitter',
+    score: 100,
+    devicePixelRatio: 1,
+    hasJoined: false,
+  };
+
   socket.on('new player', (data) => {
-    players[socket.id] = {
-      x: 3000 * Math.random() + 50,
-      y: 2000 * Math.random() + 50,
-      radius: 20, //hitbox
-      angle: -1.5708,
-      hp: 100,
-      icon: Math.floor(Math.random() * 12),
-      name: data.name,
-      score: 100,
-      devicePixelRatio: data.devicePixelRatio,
-    };
+    //since obsatcles are stationary, we only need to send them once
+    io.emit("getObstacles", obstacles);
+    try{
+      const playerLocation = generatePlayerLocation();
+      players[socket.id].name = data.name;
+      players[socket.id].devicePixelRatio = data.devicePixelRatio;
+      players[socket.id].hp = 100;
+      players[socket.id].x = playerLocation.x;
+      players[socket.id].y = playerLocation.y;
+      players[socket.id].hasJoined = true;
+    }catch(e){
+      console.log(e);
+    }
+
   });
 
   //player movement and mouse movement
   socket.on("mouseMove", (data) => {
     const player = players[socket.id];
-    if (!player) return;
+    if (!player || !player.hasJoined) return;
+
     player.angle = data;
   });
 
   const speed = 5;
   socket.on("keydown", (data) => {
     const player = players[socket.id];
-    if (!player) return;
+    if (!player || !player.hasJoined) return;
+    
     if(player.y - 40< 0) player.y = 40; //prevents player from going out of bounds
     if(player.y + 40> arenaSize.y) player.y = arenaSize.y - 40;
     if(player.x - 40< 0) player.x = 40;
@@ -81,6 +112,8 @@ io.on("connection", (socket) => {
   //when a player shoots
   socket.on("shoot", (data) => {
     const player = players[socket.id];
+    if (!player || !player.hasJoined) return;
+
     const projectile = {
       angle: data.angle,
       velocity: data.velocity,
@@ -105,16 +138,14 @@ io.on("connection", (socket) => {
 setInterval(() => {
   io.emit("updateProjectiles", projectiles);  
   io.emit("updatePlayers", players);
-  io.emit("updateObstacles", obstacles);
 
   //collision detection between players and obstacles
   // O(nLogm) complexity 
   // n = number of players ( max 10 )
   // m = number of obstacles ( max 1000 )
-
   for(let id in players){ 
     const player = players[id];
-    if(!player) continue; //if player is null, skip
+    if (!player || !player.hasJoined) continue;
 
     let playerArea = new Rectangle(player.x,player.y,30,30);
     let pointsInRange = [];
@@ -125,7 +156,8 @@ setInterval(() => {
         //tick damage
         player.hp -= 1;
         if (player.hp <= 0){
-          delete players[id];
+          io.emit("playerKilled", id); 
+          player.hasJoined = false; //player died so unspawn them
         } //remove player
       }
     });
@@ -140,8 +172,10 @@ setInterval(() => {
 
     for(let id in players){
       const player = players[id];
+      if (!player || !player.hasJoined) continue;
+
       const dist = Math.hypot(projectile.x - player.x, projectile.y - player.y); //distance between projectile and player
-      
+
       if (dist - player.radius - projectile.radius < 1) { //collision
         if (projectile.owner == id) continue; //if projectile owner is the player, skip
         
@@ -155,8 +189,8 @@ setInterval(() => {
         if (player.hp <= 0){ 
           players[projectile.owner].score += Math.round(player.score*0.7); //add score to player who killed the other player
           io.emit("playerKilled", id); 
-          delete players[id];
-        } //remove player
+          player.hasJoined = false; //player died so unspawn them
+        } 
         projectiles.splice(i, 1); //removes projectile from array
       }
     }
@@ -178,6 +212,7 @@ setInterval(() => {
         players[projectile.owner].score += 10; 
         if( players[projectile.owner].hp < 150 ) players[projectile.owner].hp += 3; //heal player
         projectiles.splice(i, 1); //removes projectile from array
+        io.emit("removeObstacle", obstacle.id);
         qTree.delete(obstacle); //removes obstacle from array
         delete obstacles[obstacle.id]; 
       }
@@ -229,6 +264,8 @@ setInterval(() => {
   };
   qTree.insert(obstacle);
   obstacles[id] = obstacle;
+  io.emit("newObstacle", obstacle);
+
 }, 1000); //currently 1 new obstacles per second, max 1000
 //change tines depending on current number of obstacles 
 //to keep the number of obstacles on the map constant
