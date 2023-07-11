@@ -48,7 +48,7 @@ canvas{
 
   #gameOverlay{
     overflow: hidden;
-
+    position: relative;
   }
 
   #startOverlay{
@@ -326,4 +326,21 @@ input:focus{
 input::placeholder {
   color: rgb(85, 66, 229);
   text-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px;
+}
+
+
+/* joystcick css */
+
+#leftJoystick{
+  position: absolute;
+  left: 0;
+  height: 100%;
+  width: 40%;
+}
+
+#rightJoystick{
+  position: absolute;
+  right : 0%;
+  height: 100%;
+  width: 40%;
 }

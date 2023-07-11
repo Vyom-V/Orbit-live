@@ -59,6 +59,8 @@
           </symbol>
         </svg>
       </div>
+      <div id='leftJoystick'></div>
+      <div id='rightJoystick'></div>
       <canvas></canvas>
       <div id="endScreen">
         <div class="container">
@@ -99,18 +101,10 @@
         </div>
       </div>
     </div>
-    <script src="socket.io/socket.io.js"></script>
-    <script
-      src="https://cdn.socket.io/4.6.0/socket.io.min.js"
-      integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
-      crossorigin="anonymous"
-    ></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/gsap.min.js"
-      integrity="sha512-qF6akR/fsZAB4Co1QDDnUXWnaQseLGXoniuSuSlPQK6+aWhlMZcHzkasCSlnWoe+TJuudlka1/IQ01Dnhgq95g=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
+    <!-- <script src="socket.io/socket.io.js"></script> -->
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous" ></script>
+    <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.10.1/dist/nipplejs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.1/gsap.min.js" integrity="sha512-qF6akR/fsZAB4Co1QDDnUXWnaQseLGXoniuSuSlPQK6+aWhlMZcHzkasCSlnWoe+TJuudlka1/IQ01Dnhgq95g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="./Classes/Node.js"></script>
     <script src="./Classes/Heap.js"></script>
     <script src="./Classes/NameTag.js"></script>
@@ -121,6 +115,7 @@
     <script src="./EventListeners/Resize.js"></script>
     <script src="./EventListeners/Controller.js"></script>
     <script src="./EventListeners/Shoot.js"></script>
+    <script src="./PhoneUtils/joyStick.js"></script>
     <script src="index.js"></script>
     <script>
       const startSfx = new Audio("./Resources/Bonus/start.wav");
@@ -129,6 +124,7 @@
         if(thisScreenOrientation.type.startsWith("portrait")){
           document.getElementById("gameOverlay").requestFullscreen();
           thisScreenOrientation.lock("landscape").catch((err) => { console.log(err); });
+          initJoystick();
         }
         const name = document.getElementById("nameS").value;
         startSfx.play();

@@ -112,18 +112,22 @@ io.on("connection", (socket) => {
 
   //when a player shoots
   socket.on("shoot", (data) => {
-    const player = players[socket.id];
-    if (!player || !player.hasJoined) return;
+    try{
+      const player = players[socket.id];
+      if (!player || !player.hasJoined) return;
 
-    const projectile = {
-      angle: data.angle,
-      velocity: data.velocity,
-      x: data.x,
-      y: data.y,
-      owner: socket.id,
-      radius: 5, //hitbox
-    };
-    projectiles.push(projectile);
+      const projectile = {
+        angle: data.angle,
+        velocity: data.velocity,
+        x: data.x,
+        y: data.y,
+        owner: socket.id,
+        radius: 5, //hitbox
+      };
+      projectiles.push(projectile);
+    }catch(e){
+      console.log("shoot: ",e);
+    }
   });
 
   //when a player disconnects
@@ -144,24 +148,28 @@ setInterval(() => {
   // O(nLogm) complexity 
   // n = number of players ( max 10 )
   // m = number of obstacles ( max 1000 )
-  for(let id in players){ 
-    const player = players[id];
-    if (!player || !player.hasJoined) continue;
-
-    let playerArea = new Rectangle(player.x,player.y,30,30);
-    let pointsInRange = [];
-    pointsInRange = qTree.nearbyPoints(playerArea,pointsInRange);
-    pointsInRange.forEach((obstacle) => {
-      const dist = Math.hypot(player.x - obstacle.x, player.y - obstacle.y); //distance between player and obstacle
-      if (dist - obstacle.radius - player.radius < 1) { //collision
-        //tick damage
-        player.hp -= 1;
-        if (player.hp <= 0){
-          io.emit("playerKilled", id); 
-          player.hasJoined = false; //player died so unspawn them
-        } //remove player
-      }
-    });
+  try{
+    for(let id in players){ 
+      const player = players[id];
+      if (!player || !player.hasJoined) continue;
+      
+      let playerArea = new Rectangle(player.x,player.y,30,30);
+      let pointsInRange = [];
+      pointsInRange = qTree.nearbyPoints(playerArea,pointsInRange);
+      pointsInRange.forEach((obstacle) => {
+        const dist = Math.hypot(player.x - obstacle.x, player.y - obstacle.y); //distance between player and obstacle
+        if (dist - obstacle.radius - player.radius < 1) { //collision
+          //tick damage
+          player.hp -= 1;
+          if (player.hp <= 0){
+            io.emit("playerKilled", id); 
+            player.hasJoined = false; //player died so unspawn them
+          } //remove player
+        }
+      });
+    }
+  }catch(e){
+    console.log("PvO collision: ",e);
   }
   
   //collision detection between projectiles and (players or obstacles)
@@ -171,56 +179,64 @@ setInterval(() => {
   for (let i = 0; i < projectiles.length; i++) {
     const projectile = projectiles[i];
 
-    for(let id in players){
-      const player = players[id];
-      if (!player || !player.hasJoined) continue;
+    try{
+      for(let id in players){
+        const player = players[id];
+        if (!player || !player.hasJoined) continue;
 
-      const dist = Math.hypot(projectile.x - player.x, projectile.y - player.y); //distance between projectile and player
+        const dist = Math.hypot(projectile.x - player.x, projectile.y - player.y); //distance between projectile and player
 
-      if (dist - player.radius - projectile.radius < 1) { //collision
-        if (projectile.owner == id) continue; //if projectile owner is the player, skip
-        
-        io.emit("hit",{ //render particles effect on client
-          x: projectile.x,
-          y: projectile.y,
-          type: 5,
-        })
-        
-        player.hp -= 10; //damage player
-        if (player.hp <= 0){ 
-          players[projectile.owner].score += Math.round(player.score*0.7); //add score to player who killed the other player
-          io.emit("playerKilled", id); 
-          player.hasJoined = false; //player died so unspawn them
-        } 
-        projectiles.splice(i, 1); //removes projectile from array
+        if (dist - player.radius - projectile.radius < 1) { //collision
+          if (projectile.owner == id) continue; //if projectile owner is the player, skip
+          
+          io.emit("hit",{ //render particles effect on client
+            x: projectile.x,
+            y: projectile.y,
+            type: 5,
+          })
+          
+          player.hp -= 10; //damage player
+          if (player.hp <= 0){ 
+            players[projectile.owner].score += Math.round(player.score*0.7); //add score to player who killed the other player
+            io.emit("playerKilled", id); 
+            player.hasJoined = false; //player died so unspawn them
+          } 
+          projectiles.splice(i, 1); //removes projectile from array
+        }
       }
+    }catch(e){
+      console.log("ProvP collision: ",e);
     }
 
     //collision detection between projectiles and obstacles
     // O(n*logm) complexity
     // n = number of projectiles ( max depends on players )
     // m = number of obstacles ( max 1000 )
-    const pointRange = new Rectangle(projectile.x, projectile.y, 30, 30);
-    let pointsInRange = qTree.nearbyPoints(pointRange,[])
-    pointsInRange.forEach((obstacle) => {
-      const dist = Math.hypot(projectile.x - obstacle.x, projectile.y - obstacle.y); //distance between projectile and obstacle
-      if (dist - obstacle.radius - projectile.radius < 1) { //collision
-        io.emit("hit",{ //render particles effect on client
-          x: projectile.x,
-          y: projectile.y,
-          type: 1,
-        })
-        players[projectile.owner].score += 10; 
-        if( players[projectile.owner].hp < 150 ) players[projectile.owner].hp += 3; //heal player
-        projectiles.splice(i, 1); //removes projectile from array
-        io.emit("removeObstacle", obstacle.id);
-        qTree.delete(obstacle); //removes obstacle from array
-        delete obstacles[obstacle.id]; 
-      }
-    }); //collision detection with Obstacles
-
-    if(!projectile) continue; //if projectile is null, skip
-    if(!players[projectile.owner]) return; //if player is null, skip
+    try{
+      const pointRange = new Rectangle(projectile.x, projectile.y, 30, 30);
+      let pointsInRange = qTree.nearbyPoints(pointRange,[])
+      pointsInRange.forEach((obstacle) => {
+        const dist = Math.hypot(projectile.x - obstacle.x, projectile.y - obstacle.y); //distance between projectile and obstacle
+        if (dist - obstacle.radius - projectile.radius < 1) { //collision
+          io.emit("hit",{ //render particles effect on client
+            x: projectile.x,
+            y: projectile.y,
+            type: 1,
+          })
+          players[projectile.owner].score += 10; 
+          if( players[projectile.owner].hp < 150 ) players[projectile.owner].hp += 3; //heal player
+          projectiles.splice(i, 1); //removes projectile from array
+          io.emit("removeObstacle", obstacle.id);
+          qTree.delete(obstacle); //removes obstacle from array
+          delete obstacles[obstacle.id]; 
+        }
+      }); //collision detection with Obstacles
+    }catch(e){
+      console.log("ProvO collision: ",e);
+    }
+    
+    if(!projectile) continue; //if projectile is deleted, skip
+    if(!players[projectile.owner]) return; //if player is dead, skip
 
     //update projectile position
     projectile.x += projectile.velocity.x * 10;

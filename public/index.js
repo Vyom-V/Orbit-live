@@ -200,7 +200,6 @@ socket.on("newObstacle", (obstacle) => {
 });
 socket.on("removeObstacle", (id) => {
   if(frontendObstacles[id]){
-    console.log("removing obstacle");
     delete frontendObstacles[id];
   }
 });

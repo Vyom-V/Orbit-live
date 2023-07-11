@@ -1,4 +1,6 @@
 let clickSent = false;
+const sfx_laser = new Audio("./Resources/Bonus/fire.mp3");
+
 window.addEventListener("click", (event) => {
   const thisPlayer = frontendPlayers[socket.id];
   if (playerDied || !thisPlayer) return;
@@ -31,6 +33,45 @@ window.addEventListener("click", (event) => {
   promise.then(() => {
     clickSent = false;
   });
-  const sfx_laser = new Audio("./Resources/Bonus/fire.mp3");
   sfx_laser.play();
 });
+
+
+/* ******** rapid fire power up ******** */
+
+// let clickSent = false;
+// window.addEventListener('mousemove' , (event) => {
+//   const thisPlayer = frontendPlayers[socket.id];
+//   if (playerDied || !thisPlayer) return;
+
+//   const angle = Math.atan2(
+//     event.clientY * window.devicePixelRatio - (thisPlayer.y - cam.y),
+//     event.clientX * window.devicePixelRatio - (thisPlayer.x - cam.x) 
+//   );
+
+//   if(event.buttons == 1){ //coresponds to left button down
+
+//     if (clickSent) return;
+
+//     const data = {
+//       angle: angle,
+//       velocity: {
+//         x: Math.cos(angle),
+//         y: Math.sin(angle),
+//       },
+//       x: thisPlayer.x,
+//       y: thisPlayer.y,
+//     };
+//     socket.emit("shoot", data);
+
+//     clickSent = true;
+//     let promise = new Promise((resolve, reject) => { 
+//       setTimeout(() => { resolve(); }, 100); 
+//     });
+//     promise.then(() => { clickSent = false; });
+
+//     const sfx_laser = new Audio("./Resources/Bonus/fire.mp3");
+//     sfx_laser.play();
+
+//   }
+// });
