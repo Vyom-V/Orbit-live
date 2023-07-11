@@ -124,8 +124,12 @@
     <script src="index.js"></script>
     <script>
       const startSfx = new Audio("./Resources/Bonus/start.wav");
+      const thisScreenOrientation = window.screen.orientation;
       const startGame = () => {
-        // document.getElementById("gameOverlay").requestFullscreen();
+        if(thisScreenOrientation.type.startsWith("portrait")){
+          document.getElementById("gameOverlay").requestFullscreen();
+          thisScreenOrientation.lock("landscape").catch((err) => { console.log(err); });
+        }
         const name = document.getElementById("nameS").value;
         startSfx.play();
         startCanvas(name);
@@ -140,5 +144,6 @@
         document.getElementById("endScreen").style.display = "none";
       };
     </script>
+
   </body>
 </html>

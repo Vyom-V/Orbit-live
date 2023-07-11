@@ -1,4 +1,8 @@
+html{
+  overflow: hidden;
+}
 body {
+  position: relative;
     margin: 0;
     /* background: #000; */
     overflow: hidden;
@@ -41,6 +45,11 @@ canvas{
 
   /* startOverlay button css glow effect*/
   @import url("https://fonts.googleapis.com/css?family=Raleway");
+
+  #gameOverlay{
+    overflow: hidden;
+
+  }
 
   #startOverlay{
     position: absolute;

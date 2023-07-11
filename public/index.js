@@ -157,8 +157,8 @@ socket.on("updatePlayers", (backendPlayers) => {
       frontendPlayers[id].y = backendPlayer.y;
       frontendPlayers[id].velocity = backendPlayer.velocity;
       frontendPlayers[id].hp = backendPlayer.hp;
-      frontendPlayers[id].angle = backendPlayer.angle;
-      //update angle on client side to avoid jittering
+      if(id != socket.id) frontendPlayers[id].angle = backendPlayer.angle;
+      //use client side prediction ,update angle on client side to avoid jittering
     }
   }
 });
@@ -207,8 +207,15 @@ socket.on("removeObstacle", (id) => {
 
 
 socket.on("hit", (backendHitLocation) => { 
-  // const hitSfx = new Audio("./Resources/Bonus/sfx_sounds_damage1.ogg");
-  // hitSfx.play();
+  const hitSfx = new Audio("./Resources/Bonus/hit.mp3");
+  hitSfx.play();
+  if(
+    backendHitLocation.x < cam.x ||
+    backendHitLocation.x > cam.x + canvas.width ||
+    backendHitLocation.y < cam.y ||
+    backendHitLocation.y > cam.y + canvas.height
+  ) return; //if hit is outside of viewport, dont render it
+
   for(let i=0;i<15;i++){
     frontendParticles.push(new Particle(backendHitLocation));
   }
@@ -247,6 +254,9 @@ function gameOver() {
 
 /* ********  Animation Loop  ********* */
 
+
+//optimise this by splitting into 2 loops, one for rendering and one for updating 
+//rendering is done at 60fps, updating is done at 30fps
 let animationId;
 function animate() {
   animationID = requestAnimationFrame(animate);
@@ -315,7 +325,7 @@ function animate() {
       frontendParticle.y < cam.y ||
       frontendParticle.y > cam.y + canvas.height
     ) {
-      continue; //only render players that are in the viewport
+      frontendParticles.splice(i, 1); //only render players that are in the viewport
     }
     if(frontendParticle.radius <= 1){
       frontendParticles.splice(i, 1); //removes projectile from array
