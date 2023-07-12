@@ -11,7 +11,7 @@ var dipRect = canvas.getBoundingClientRect();
 canvas.width = Math.round(devicePixelRatio * dipRect.right) - Math.round(devicePixelRatio * dipRect.left);
 canvas.height = Math.round(devicePixelRatio * dipRect.bottom)- Math.round(devicePixelRatio * dipRect.top);
 
-// ****** Load Images ****** //
+// ****** Load Resources Images ****** //
 
 let playerIcons = new Array(12);
 let imagesLoaded = 0;
@@ -43,25 +43,22 @@ for (let i = 0; i < 8; i++) {
 let engine = new Image();
 engine.src = "./Resources/ship/engine.png";
 let engineFlame = new Image();
-engineFlame.src = "./Resources/ship/engineFlame.png";
+engineFlame.src = "./Resources/ship/engineFlame2.png";
 let ship = new Image();
 ship.src = "./Resources/ship/ship.png";
 let cannon = new Image();
 cannon.src = "./Resources/ship/cannon.png";
 let bullet = new Image();
-bullet.src = "./Resources/ship/bullet.png";
+bullet.src = "./Resources/ship/rocket.png";
+let rock = new Image();
+rock.src = "./Resources/asteroids/base.png";
 
 let shield = new Image();
+shield.src = "./Resources/PNG/Effects/shield3.png";
 let rockets = new Image();
+rockets.src = "./Resources/PNG/Effects/fire08.png";
 const bgImg = new Image();
 bgImg.src = "./Resources/Backgrounds/s1.png";
-bgImg.onload = function () {
-  console.log("background loaded");
-  rockets.src = "./Resources/PNG/Effects/fire08.png";
-};
-rockets.onload = function () {
-  shield.src = "./Resources/PNG/Effects/shield3.png";
-};
 
 /* ********  Global Variables  ********* */
 
@@ -276,6 +273,8 @@ function animate() {
   // console.log(animationID);
   context.fillRect(0, 0, canvas.width, canvas.height); //clears canvas each time to redraw player and projectiles in new position
 
+  //Background image
+
   context.drawImage(
     bgImg,
     cam.x,
@@ -287,6 +286,7 @@ function animate() {
     canvas.width,
     canvas.height, 
   );
+
 
   for (let i = 0; i < frontendProjectiles.length; i++) {
     const frontendProjectile = frontendProjectiles[i];
@@ -326,12 +326,19 @@ function animate() {
       continue; //only render players that are in the viewport
     }
     
+    //drawns hit box
+    // context.beginPath();
+    // context.arc(frontendObstacle.x - cam.x, frontendObstacle.y - cam.y, frontendObstacle.radius, 0, Math.PI * 2, false);
+    // context.fillStyle = "blue";
+    // context.fill();
+
     context.drawImage(
-      meteorIcons[frontendObstacle.icon],
-      frontendObstacle.x - frontendObstacle.radius - cam.x,
-      frontendObstacle.y - frontendObstacle.radius - cam.y,
-      frontendObstacle.radius * 2,
-      frontendObstacle.radius * 2
+      // meteorIcons[frontendObstacle.icon],
+      rock,
+      frontendObstacle.x - (frontendObstacle.radius * 3) - cam.x,
+      frontendObstacle.y - (frontendObstacle.radius * 3) - cam.y,
+      (frontendObstacle.radius * 3) * 2,
+      (frontendObstacle.radius * 3) * 2
     );
   }
 

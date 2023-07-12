@@ -27,43 +27,15 @@ class Player {
     context.fill();
   }
 
+  //updates player direction based on mouse movemnt and keydown
   updateDirection(cam , animationID) {
-    //updates player direction based on mouse movemnt and keydown
     // this.draw();  //hitbox
-    // this.drawHpBar(cam);
     this.nameTag.draw( (this.x - cam.x) / devicePixelRatio , (this.y - cam.y) / devicePixelRatio );
     this.hpBar.draw( (this.x - cam.x) / devicePixelRatio , (this.y - cam.y) / devicePixelRatio , this.hp );
     let angleInRadians = this.angle + 1.5708;
     context.save();
     context.translate(this.x - cam.x, this.y - cam.y);
     context.rotate(angleInRadians);
-    context.drawImage(
-      // playerIcons[this.icon],
-      ship,
-      -(this.radius * 4)/2,
-      -(this.radius * 4)/2,
-      this.radius * 4,
-      this.radius * 4,
-    );
-    context.drawImage(
-      engine,
-      -(this.radius * 3)/2,
-      -(this.radius * 3)/2,
-      this.radius * 3,
-      this.radius * 3,
-    );
-
-    context.drawImage(
-      engineFlame,
-      0 + (48 * Math.floor((animationID % 32) / 8) ),   //slow down animation
-      48,
-      48,
-      48,
-      -(this.radius * 3)/2,
-      + 10 -(this.radius * 3)/2,
-      this.radius * 3,
-      this.radius * 3,
-    );
 
     if(fired){
       context.drawImage(
@@ -73,7 +45,7 @@ class Player {
         48,
         48,
         -(this.radius * 2)/2,
-        - 10 -(this.radius * 2)/2,
+        - 20 -(this.radius * 2)/2,
         this.radius * 2,
         this.radius * 2,
       );
@@ -85,12 +57,34 @@ class Player {
         0,
         48,
         48,
-        -(this.radius * 2)/2,
-        - 10 -(this.radius * 2)/2,
-        this.radius * 2,
-        this.radius * 2,
+        -(this.radius * 3)/2,
+        - 10 -(this.radius * 3)/2,
+        this.radius * 3,
+        this.radius * 3,
       );
     }
+
+    context.drawImage(
+      ship,
+      // playerIcons[this.icon],
+      -(this.radius * 3.5 )/2,
+      -(this.radius * 3.5 )/2,
+      this.radius * 3.5 ,
+      this.radius * 3.5 ,
+    );  
+
+    context.drawImage(
+      engineFlame,
+      0 + (48 * Math.floor((animationID % 32) / 8) ),   //slow down animation
+      0,
+      24,
+      48,
+      -10 -(this.radius * 2)/2,
+      -5 -(this.radius * 4)/2,
+      this.radius * 2,
+      this.radius * 4,
+    );
+
     context.restore();
   }
 }

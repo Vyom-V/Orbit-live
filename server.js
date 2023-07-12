@@ -276,7 +276,7 @@ setInterval(() => {
     id: id,
     x: arenaSize.x * Math.random(),
     y: arenaSize.y * Math.random(),
-    radius:  Math.random() * (30 - 6) + 6, //hitbox
+    radius:  Math.random() * (35 - 14) + 6, //hitbox
     icon: Math.floor(Math.random() * 8),
   };
   qTree.insert(obstacle);

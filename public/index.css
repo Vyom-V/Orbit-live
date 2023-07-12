@@ -1,11 +1,15 @@
 html{
   overflow: hidden;
+  height: 100vh;
+  width: 100vw;
 }
 body {
   position: relative;
     margin: 0;
     /* background: #000; */
     overflow: hidden;
+    height: 100vh;
+    width: 100vw;
   }
 canvas{
   height: 100%;
@@ -49,6 +53,8 @@ canvas{
   #gameOverlay{
     overflow: hidden;
     position: relative;
+    width: 100vw;
+    height: 100vh;
   }
 
   #startOverlay{
@@ -343,4 +349,12 @@ input::placeholder {
   right : 0%;
   height: 100%;
   width: 40%;
+}
+
+/* media queries */
+@media only screen and (max-width: 1000px) {
+  .leaderboard{
+    top: 25% !important;
+    left: 85% !important;
+  }
 }
