@@ -50,7 +50,7 @@ io.on("connection", (socket) => {
   players[socket.id] = {
     x: 0,
     y: 0,
-    radius: 20, //hitbox
+    radius: 25, //hitbox
     angle: -1.5708,
     hp: 100,
     icon: Math.floor(Math.random() * 12),

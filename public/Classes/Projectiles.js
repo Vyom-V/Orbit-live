@@ -3,7 +3,7 @@ class Projectile {
     constructor(x, y, radius, color, velocity, angle) {
       this.x = x;
       this.y = y;
-      this.radius = radius;
+      this.radius = radius * window.devicePixelRatio;
       this.color = color;
       this.velocity = 0; //object with x and y velocity rates to move at angle
       this.angle = angle;

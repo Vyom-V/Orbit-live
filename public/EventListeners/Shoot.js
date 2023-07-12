@@ -1,4 +1,4 @@
-let clickSent = false;
+let fired = false;
 const sfx_laser = new Audio("./Resources/Bonus/fire.mp3");
 
 window.addEventListener("click", (event) => {
@@ -22,16 +22,16 @@ window.addEventListener("click", (event) => {
   };
 
   //emiting every 30ms to reduce server load
-  if (clickSent) return;
+  if (fired) return;
   socket.emit("shoot", data);
-  clickSent = true;
+  fired = true;
   let promise = new Promise((resolve, reject) => {
     setTimeout(() => {
       resolve();
-    }, 30);
+    }, 100);
   });
   promise.then(() => {
-    clickSent = false;
+    fired = false;
   });
   sfx_laser.play();
 });
@@ -39,7 +39,7 @@ window.addEventListener("click", (event) => {
 
 /* ******** rapid fire power up ******** */
 
-// let clickSent = false;
+// let fired = false;
 // window.addEventListener('mousemove' , (event) => {
 //   const thisPlayer = frontendPlayers[socket.id];
 //   if (playerDied || !thisPlayer) return;
@@ -51,7 +51,7 @@ window.addEventListener("click", (event) => {
 
 //   if(event.buttons == 1){ //coresponds to left button down
 
-//     if (clickSent) return;
+//     if (fired) return;
 
 //     const data = {
 //       angle: angle,
@@ -64,11 +64,11 @@ window.addEventListener("click", (event) => {
 //     };
 //     socket.emit("shoot", data);
 
-//     clickSent = true;
+//     fired = true;
 //     let promise = new Promise((resolve, reject) => { 
 //       setTimeout(() => { resolve(); }, 100); 
 //     });
-//     promise.then(() => { clickSent = false; });
+//     promise.then(() => { fired = false; });
 
 //     const sfx_laser = new Audio("./Resources/Bonus/fire.mp3");
 //     sfx_laser.play();

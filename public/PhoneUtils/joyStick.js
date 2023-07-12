@@ -53,7 +53,16 @@ function initJoystick() {
         //emiting every 200ms to make it more fair
         setIntervalId = setInterval(() => {
             if(fireData != null)
-                socket.emit("shoot", fireData);
+            fired = true; //firing effect for mobile
+            socket.emit("shoot", fireData);
+            let promise = new Promise((resolve, reject) => {
+                setTimeout(() => {
+                  resolve();
+                }, 100);
+              });
+              promise.then(() => {
+                fired = false;
+              });
         } , 200);
 
         rightJoystick.on('start move ', function (evt, data) {

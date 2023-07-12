@@ -5,8 +5,11 @@ const context = canvas.getContext("2d");
 const socket = io(); // initialize a new socket.io instance by passing the server object
 
 const devicePixelRatio = window.devicePixelRatio || 1;
-canvas.width = window.innerWidth * devicePixelRatio;
-canvas.height = window.innerHeight * devicePixelRatio;
+// canvas.width = window.innerWidth * devicePixelRatio;
+// canvas.height = window.innerHeight * devicePixelRatio;
+var dipRect = canvas.getBoundingClientRect();
+canvas.width = Math.round(devicePixelRatio * dipRect.right) - Math.round(devicePixelRatio * dipRect.left);
+canvas.height = Math.round(devicePixelRatio * dipRect.bottom)- Math.round(devicePixelRatio * dipRect.top);
 
 // ****** Load Images ****** //
 
@@ -37,6 +40,17 @@ for (let i = 0; i < 8; i++) {
 }
 
 //write better code for this later
+let engine = new Image();
+engine.src = "./Resources/ship/engine.png";
+let engineFlame = new Image();
+engineFlame.src = "./Resources/ship/engineFlame.png";
+let ship = new Image();
+ship.src = "./Resources/ship/ship.png";
+let cannon = new Image();
+cannon.src = "./Resources/ship/cannon.png";
+let bullet = new Image();
+bullet.src = "./Resources/ship/bullet.png";
+
 let shield = new Image();
 let rockets = new Image();
 const bgImg = new Image();
@@ -259,7 +273,7 @@ function gameOver() {
 let animationId;
 function animate() {
   animationID = requestAnimationFrame(animate);
-
+  // console.log(animationID);
   context.fillRect(0, 0, canvas.width, canvas.height); //clears canvas each time to redraw player and projectiles in new position
 
   context.drawImage(
@@ -290,7 +304,13 @@ function animate() {
       frontendProjectile.y - cam.y
     );
     context.rotate(frontendProjectile.angle + 1.5708);
-    context.drawImage(rockets, -2.5, -5, 5, 25);
+    context.drawImage(
+      bullet,
+      0 + (32 + Math.floor((animationID % 40) / 10)),
+      0,
+      32,
+      32,
+      -(50 * devicePixelRatio)/2, -70, 50 * devicePixelRatio, 70);
     context.restore();
   }
 
@@ -305,7 +325,7 @@ function animate() {
     ) {
       continue; //only render players that are in the viewport
     }
-
+    
     context.drawImage(
       meteorIcons[frontendObstacle.icon],
       frontendObstacle.x - frontendObstacle.radius - cam.x,
@@ -333,6 +353,6 @@ function animate() {
   }
 
   for (let id in frontendPlayers) {
-    frontendPlayers[id].updateDirection(cam);
+    frontendPlayers[id].updateDirection(cam , animationID);
   }
 }
