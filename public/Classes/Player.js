@@ -1,5 +1,7 @@
 class Player {
   constructor(x, y, radius, icon, hp , name) {
+    this.nameTag = new NameTag(this.x, this.y, this.name); 
+    this.hpBar = new HpBar(this.x, this.y, this.hp);
     this.x = x;
     this.y = y;
     this.radius = radius * window.devicePixelRatio;
@@ -7,8 +9,12 @@ class Player {
     this.angle = -1.5708;
     this.hp = hp;
     this.name = name;
-    this.nameTag = new NameTag(this.x, this.y, this.name); 
-    this.hpBar = new HpBar(this.x, this.y, this.hp);
+    this.maxHp =  100;
+    this.speed =  5; 
+    this.defense =  0;
+    this.dmgPerShoot =  10;
+    this.rocketPerShoot =  1;
+    this.availablePoints =  0;
   }
 
   draw() {
@@ -77,11 +83,23 @@ class Player {
       engineFlame,
       0 + (48 * Math.floor((animationID % 32) / 8) ),   //slow down animation
       0,
-      24,
       48,
-      -10 -(this.radius * 2)/2,
-      -5 -(this.radius * 4)/2,
-      this.radius * 2,
+      48,
+       -(this.radius * 3)/2,
+       -(this.radius * 4)/2,
+      this.radius * 3,
+      this.radius * 4,
+    );
+
+    context.drawImage(
+      engine,
+      0, 
+      0,
+      48,
+      48,
+       -(this.radius * 3)/2,
+       -(this.radius * 4)/2,
+      this.radius * 3,
       this.radius * 4,
     );
 

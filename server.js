@@ -23,6 +23,13 @@ let obstacles = {};
 const arenaRect = new Rectangle(arenaSize.x/2,arenaSize.y/2,arenaSize.x/2,arenaSize.y/2 );
 let qTree = new QuadTree(arenaRect,2);
 let projectiles = new Array();
+const pointSystem = new Array( 
+                              110,300,400,500,700, 
+                              1000,1300,1550,2000,2550,
+                              3200,4000,5000,6200,7500,
+                              9000,11000,14000,19000
+                            );
+
 
 
 const generatePlayerLocation = () => {
@@ -48,16 +55,22 @@ io.on("connection", (socket) => {
   console.log("a user joined");
   
   players[socket.id] = {
+    hasJoined: false,
+    name: 'Orbitter', //default
     x: 0,
     y: 0,
-    radius: 25, //hitbox
     angle: -1.5708,
-    hp: 100,
-    icon: Math.floor(Math.random() * 12),
-    name: 'Orbitter',
-    score: 100,
+    radius: 25, //hitbox
     devicePixelRatio: 1,
-    hasJoined: false,
+    score: 100,
+    hp: 100,
+    maxHp: 100, //150,200,250,300
+    speed: 5, //6,7,8,9
+    defense: 0, //5,10,15,20
+    dmgPerShoot: 10, //15,20,25,30
+    rocketPerShoot: 1, //2,3  --> 2 upgrade points per upgrade
+    availablePoints: 0,
+    receievedPoints: 0, //max --> 20
   };
 
   socket.on('new player', (data) => {
@@ -86,7 +99,6 @@ io.on("connection", (socket) => {
     player.angle = data;
   });
 
-  const speed = 5;
   socket.on("keydown", (data) => {
     const player = players[socket.id];
     if (!player || !player.hasJoined) return;
@@ -97,16 +109,16 @@ io.on("connection", (socket) => {
     if(player.x + 40> arenaSize.x) player.x = arenaSize.x - 40;
 
     if (player && data.s) {
-      player.y += speed;
+      player.y += player.speed;
     }
     if (player && data.w) {
-      player.y += -speed;
+      player.y += -player.speed;
     }
     if (player && data.d) {
-      player.x += speed;
+      player.x += player.speed;
     }
     if (player && data.a) {
-      player.x += -speed;
+      player.x += -player.speed;
     }
   });
 
@@ -130,6 +142,20 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("upgradeStats", (stat)=> {
+    const player = players[socket.id];
+    if (!player || !player.hasJoined) return;
+
+    let requiredPoints = 1;
+    if('rocketPerShoot' === stat) requiredPoints = 2;                            
+                                                        //implement this👇 
+    if(requiredPoints <= player.availablePoints && player[stat]< (5 + (1 * 4)) ) {
+      player[stat]++;
+      player.availablePoints -= requiredPoints;
+      io.emit("upgradeSuccessful",{id:socket.id,stat});
+    }
+  });
+
   //when a player disconnects
   socket.on("disconnect", () => {
     console.log("user disconnected");
@@ -143,7 +169,7 @@ io.on("connection", (socket) => {
 setInterval(() => {
   io.emit("updateProjectiles", projectiles);  
   io.emit("updatePlayers", players);
-
+  // console.log(Object.keys(obstacles).length);
   //collision detection between players and obstacles
   // O(nLogm) complexity 
   // n = number of players ( max 10 )
@@ -153,6 +179,13 @@ setInterval(() => {
       const player = players[id];
       if (!player || !player.hasJoined) continue;
       
+      if(player.score > pointSystem[player.receievedPoints]) {
+        player.availablePoints++;
+        player.receievedPoints++;
+        console.log('levelUp');
+        io.emit('levelUp',id);
+      }
+
       let playerArea = new Rectangle(player.x,player.y,30,30);
       let pointsInRange = [];
       pointsInRange = qTree.nearbyPoints(playerArea,pointsInRange);
@@ -269,7 +302,6 @@ setInterval(() => {
 let maxSpawned = 1000;
 setInterval(() => {
   const obstacleCount = Object.keys(obstacles).length;
-  console.log(obstacleCount);
   if (maxSpawned < obstacleCount) return;
   const id = uuid.generate();
   const obstacle = {

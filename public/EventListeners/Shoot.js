@@ -33,7 +33,8 @@ window.addEventListener("click", (event) => {
   promise.then(() => {
     fired = false;
   });
-  sfx_laser.play();
+  sfx_laser.currentTime = 0;
+  sfx_laser.play();  
 });
 
 

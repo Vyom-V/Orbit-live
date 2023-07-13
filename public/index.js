@@ -1,6 +1,8 @@
 const scoreBoard = document.getElementById("scoreBoard");
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
+const statsUi = document.getElementById('statsUi');
+const userPoints = document.getElementById('userPoints');
 
 const socket = io(); // initialize a new socket.io instance by passing the server object
 
@@ -146,7 +148,13 @@ socket.on("updatePlayers", (backendPlayers) => {
         20,
         backendPlayer.icon,
         backendPlayer.hp,
-        backendPlayer.name
+        backendPlayer.name,
+        backendPlayer.maxHp,
+        backendPlayer.speed,
+        backendPlayer.defense,
+        backendPlayer.dmgPerShoot,
+        backendPlayer.rocketPerShoot,
+        backendPlayer.availablePoints
       );
     } else {
       //player interpolation to smooth out movement during lag
@@ -164,12 +172,21 @@ socket.on("updatePlayers", (backendPlayers) => {
         }
         continue;
       }
+      //use client side prediction ,update angle on client side to avoid jittering
+      if(id != socket.id) frontendPlayers[id].angle = backendPlayer.angle;
       frontendPlayers[id].x = backendPlayer.x;
       frontendPlayers[id].y = backendPlayer.y;
       frontendPlayers[id].velocity = backendPlayer.velocity;
       frontendPlayers[id].hp = backendPlayer.hp;
-      if(id != socket.id) frontendPlayers[id].angle = backendPlayer.angle;
-      //use client side prediction ,update angle on client side to avoid jittering
+      
+      
+      //optimise this later
+      frontendPlayers[id].maxHp =  backendPlayer.maxHp; 
+      frontendPlayers[id].speed =  backendPlayer.speed; 
+      frontendPlayers[id].defense =  backendPlayer.defense; 
+      frontendPlayers[id].dmgPerShoot =  backendPlayer.dmgPerShoot; 
+      frontendPlayers[id].rocketPerShoot =  backendPlayer.rocketPerShoot; 
+      frontendPlayers[id].availablePoints =  backendPlayer.availablePoints;
     }
   }
 });
@@ -215,7 +232,6 @@ socket.on("removeObstacle", (id) => {
   }
 });
 
-
 socket.on("hit", (backendHitLocation) => { 
   const hitSfx = new Audio("./Resources/Bonus/hit.mp3");
   hitSfx.play();
@@ -230,7 +246,28 @@ socket.on("hit", (backendHitLocation) => {
     frontendParticles.push(new Particle(backendHitLocation));
   }
 });
+
+socket.on('levelUp' , (id) => {
+  if(socket.id != id) return;
   
+  openUi();
+  frontendPlayers[id].availablePoints++;
+  userPoints.innerHTML = 'Points: ' + frontendPlayers[id].availablePoints;
+  
+   setTimeout(() => {
+    closeUi();
+  }, 5000);
+})
+
+socket.on('upgradeSuccessful', (data)=>{
+  if(data.id != socket.id) return;
+  const stat = document.getElementById(data.stat);
+  const pt = document.createElement('div');
+  pt.classList.add('bar');
+  stat.appendChild(pt);
+  console.log('success');
+})
+
 /* ******** Basic Game Functions ********* */
 
 
@@ -261,7 +298,10 @@ function gameOver() {
   endScreen.style.display = "block";
 }
 
-
+function upgrade(stat) {
+  socket.emit('upgradeStats',stat.id);
+  closeUi();
+}
 /* ********  Animation Loop  ********* */
 
 

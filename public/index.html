@@ -3,17 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Orbit Wars 💫</title>
+    <title>Orbitter.live</title>
     <link
       rel="icon"
       type="image/x-icon"
       href="./Resources/PNG/Enemies/enemyBlack1.png"
     />
     <link rel="stylesheet" href="index.css" />
+    <link rel="stylesheet" href="StatsUi.css" />
     <link rel="stylesheet" href="leaderBoard.css" />
   </head>
   <body>
     <div id="gameOverlay">
+      <button onclick="openUi()" id="openUi">➕</button>
       <div class="leaderBoard noSelect">
         <div class="leaderboard">
           <h1>
@@ -61,6 +63,33 @@
       </div>
       <div id='leftJoystick'></div>
       <div id='rightJoystick'></div>
+      
+      <div id='statsUi' class="placeholder noSelect"> 
+        <div class="container" id="containerId">
+          <h1>ORBITTER</h1>
+          <h3 id="userPoints"></h3>
+          <div id="menu">
+                <div onclick="closeUi()" id="statsCloseBtn">&times;</div>
+                <ul class="list">
+                    <li class='menuItem' id="speed" onclick="upgrade(this)">
+                        <span>Speed <i>1pt</i></span>
+                    </li>
+                    <li class='menuItem' id="dmgPerShoot" onclick="upgrade(this)">
+                        <span>Damage <i>1pt</i></span>
+                    </li>
+                    <li class='menuItem' id="defense" onclick="upgrade(this)">
+                        <span>Defense <i>1pt</i></span>
+                    </li>
+                    <li class='menuItem' id="maxHp" onclick="upgrade(this)">
+                      <span>HP <i>1pt</i></span>
+                    </li>
+                    <li class='menuItem' id="rocketPerShoot" onclick="upgrade(this)">
+                        <span>Rockets <i>2pt</i></span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+      </div>
       <canvas></canvas>
       <div id="endScreen">
         <div class="container">
@@ -83,8 +112,8 @@
       </div>
       <div id="startOverlay">
         <div class="container">
-          <h1>ORBIT💫WARS</h1>
-          <p>Use WASD to move👽</p>
+          <h1>ORBITTER</h1>
+          <p><i>Use WASD to move</i></p>
           <div class="inputBox">
             <input
               id="nameS"
@@ -138,6 +167,16 @@
         resetCanvas(name);
         document.getElementById("startOverlay").style.display = "none";
         document.getElementById("endScreen").style.display = "none";
+      };
+      const closeUi = () =>{
+        const statUi = document.getElementById('statsUi')
+        statsUi.style.display = 'none';
+        statsUi.classList.add('noSelect');
+      };
+      const openUi = () =>{
+        const statUi = document.getElementById('statsUi')
+        statsUi.style.display = 'block';
+        statsUi.classList.remove('noSelect');
       };
     </script>
 
