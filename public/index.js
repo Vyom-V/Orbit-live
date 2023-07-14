@@ -150,9 +150,6 @@ socket.on("updatePlayers", (backendPlayers) => {
         backendPlayer.hp,
         backendPlayer.name,
         backendPlayer.maxHp,
-        backendPlayer.speed,
-        backendPlayer.defense,
-        backendPlayer.dmgPerShoot,
         backendPlayer.rocketPerShoot,
         backendPlayer.availablePoints
       );
@@ -178,14 +175,8 @@ socket.on("updatePlayers", (backendPlayers) => {
       frontendPlayers[id].y = backendPlayer.y;
       frontendPlayers[id].velocity = backendPlayer.velocity;
       frontendPlayers[id].hp = backendPlayer.hp;
-      
-      
-      //optimise this later
-      frontendPlayers[id].maxHp =  backendPlayer.maxHp; 
-      frontendPlayers[id].speed =  backendPlayer.speed; 
-      frontendPlayers[id].defense =  backendPlayer.defense; 
-      frontendPlayers[id].dmgPerShoot =  backendPlayer.dmgPerShoot; 
-      frontendPlayers[id].rocketPerShoot =  backendPlayer.rocketPerShoot; 
+      frontendPlayers[id].maxHp = backendPlayer.maxHp;
+      frontendPlayers[id].rocketPerShoot = backendPlayer.rocketPerShoot;
       frontendPlayers[id].availablePoints =  backendPlayer.availablePoints;
     }
   }
@@ -226,6 +217,9 @@ socket.on("getObstacles", (backendObstacles) => {
 socket.on("newObstacle", (obstacle) => {
   frontendObstacles[obstacle.id] = obstacle;
 });
+socket.on("updateObstacle", (obstacle) => {
+  frontendObstacles[obstacle.id].radius = obstacle.radius;
+});
 socket.on("removeObstacle", (id) => {
   if(frontendObstacles[id]){
     delete frontendObstacles[id];
@@ -261,9 +255,12 @@ socket.on('levelUp' , (id) => {
 
 socket.on('upgradeSuccessful', (data)=>{
   if(data.id != socket.id) return;
+
+  userPoints.innerHTML = 'Points: ' + frontendPlayers[socket.id].availablePoints;
   const stat = document.getElementById(data.stat);
   const pt = document.createElement('div');
-  pt.classList.add('bar');
+  if(data.stat == 'rocketPerShoot') pt.classList.add('2bar');
+  else pt.classList.add('bar');
   stat.appendChild(pt);
   console.log('success');
 })
@@ -365,21 +362,22 @@ function animate() {
     ) {
       continue; //only render players that are in the viewport
     }
-    
-    //drawns hit box
+
+    // drawns hit box
     // context.beginPath();
     // context.arc(frontendObstacle.x - cam.x, frontendObstacle.y - cam.y, frontendObstacle.radius, 0, Math.PI * 2, false);
     // context.fillStyle = "blue";
     // context.fill();
-
+    
     context.drawImage(
       // meteorIcons[frontendObstacle.icon],
       rock,
-      frontendObstacle.x - (frontendObstacle.radius * 3) - cam.x,
-      frontendObstacle.y - (frontendObstacle.radius * 3) - cam.y,
-      (frontendObstacle.radius * 3) * 2,
-      (frontendObstacle.radius * 3) * 2
-    );
+      frontendObstacle.x - (frontendObstacle.radius * 2.5) - cam.x,
+      frontendObstacle.y - (frontendObstacle.radius * 2.5) - cam.y,
+      (frontendObstacle.radius * 2.5) * 2,
+      (frontendObstacle.radius * 2.5) * 2
+      );
+      
   }
 
   for (let i = 0; i < frontendParticles.length; i++) {

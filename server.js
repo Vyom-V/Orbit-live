@@ -23,8 +23,15 @@ let obstacles = {};
 const arenaRect = new Rectangle(arenaSize.x/2,arenaSize.y/2,arenaSize.x/2,arenaSize.y/2 );
 let qTree = new QuadTree(arenaRect,2);
 let projectiles = new Array();
+const stats = {
+  maxHp: {base: 100, incrementBy: 50, maxPoints: 4, requiredPoints: 1},
+  speed: {base: 5, incrementBy: 0.5, maxPoints: 4, requiredPoints: 1},
+  defense: {base: 0, incrementBy: 5, maxPoints: 4, requiredPoints: 1},
+  dmgPerShoot: {base: 10, incrementBy: 5, maxPoints: 4, requiredPoints: 1},
+  rocketPerShoot: {base: 1, incrementBy: 1, maxPoints: 2, requiredPoints: 2},
+};
 const pointSystem = new Array( 
-                              110,300,400,500,700, 
+                              160,280,400,500,700, 
                               1000,1300,1550,2000,2550,
                               3200,4000,5000,6200,7500,
                               9000,11000,14000,19000
@@ -65,7 +72,7 @@ io.on("connection", (socket) => {
     score: 100,
     hp: 100,
     maxHp: 100, //150,200,250,300
-    speed: 5, //6,7,8,9
+    speed: 5, //5.5 ,6 ,6.5 ,7
     defense: 0, //5,10,15,20
     dmgPerShoot: 10, //15,20,25,30
     rocketPerShoot: 1, //2,3  --> 2 upgrade points per upgrade
@@ -127,16 +134,17 @@ io.on("connection", (socket) => {
     try{
       const player = players[socket.id];
       if (!player || !player.hasJoined) return;
-
-      const projectile = {
-        angle: data.angle,
-        velocity: data.velocity,
-        x: data.x,
-        y: data.y,
-        owner: socket.id,
-        radius: 5, //hitbox
-      };
-      projectiles.push(projectile);
+      
+      for(let i = 0; i < data.length; i++){
+        projectiles.push({
+          angle: data[i].angle,
+          velocity: data[i].velocity,
+          x: data[i].x,
+          y: data[i].y,
+          owner: socket.id,
+          radius: 5, //hitbox
+        });
+      }
     }catch(e){
       console.log("shoot: ",e);
     }
@@ -144,14 +152,11 @@ io.on("connection", (socket) => {
 
   socket.on("upgradeStats", (stat)=> {
     const player = players[socket.id];
-    if (!player || !player.hasJoined) return;
+    if (!player || !player.hasJoined) return;                         
 
-    let requiredPoints = 1;
-    if('rocketPerShoot' === stat) requiredPoints = 2;                            
-                                                        //implement this👇 
-    if(requiredPoints <= player.availablePoints && player[stat]< (5 + (1 * 4)) ) {
-      player[stat]++;
-      player.availablePoints -= requiredPoints;
+    if(stats[stat].requiredPoints <= player.availablePoints && player[stat]< (stats[stat].base + (stats[stat].incrementBy * stats[stat].maxPoints)) ) {
+      player[stat] += stats[stat].incrementBy;
+      player.availablePoints -= stats[stat].requiredPoints;
       io.emit("upgradeSuccessful",{id:socket.id,stat});
     }
   });
@@ -182,7 +187,6 @@ setInterval(() => {
       if(player.score > pointSystem[player.receievedPoints]) {
         player.availablePoints++;
         player.receievedPoints++;
-        console.log('levelUp');
         io.emit('levelUp',id);
       }
 
@@ -193,7 +197,7 @@ setInterval(() => {
         const dist = Math.hypot(player.x - obstacle.x, player.y - obstacle.y); //distance between player and obstacle
         if (dist - obstacle.radius - player.radius < 1) { //collision
           //tick damage
-          player.hp -= 1;
+          player.hp -= 1 - player.defense/100;
           if (player.hp <= 0){
             io.emit("playerKilled", id); 
             player.hasJoined = false; //player died so unspawn them
@@ -228,9 +232,9 @@ setInterval(() => {
             type: 5,
           })
           
-          player.hp -= 10; //damage player
+          player.hp -= player[projectile.owner].dmgPerShoot - player.defense; //damage player
           if (player.hp <= 0){ 
-            players[projectile.owner].score += Math.round(player.score*0.7); //add score to player who killed the other player
+            players[projectile.owner].score += Math.round(player.score * 0.4); //add score to player who killed the other player
             io.emit("playerKilled", id); 
             player.hasJoined = false; //player died so unspawn them
           } 
@@ -256,12 +260,19 @@ setInterval(() => {
             y: projectile.y,
             type: 1,
           })
-          players[projectile.owner].score += 10; 
-          if( players[projectile.owner].hp < 150 ) players[projectile.owner].hp += 3; //heal player
+
+          obstacle.hp -= players[projectile.owner].dmgPerShoot; //damage obstacle
+          obstacle.radius -= players[projectile.owner].dmgPerShoot; //damage obstacle
           projectiles.splice(i, 1); //removes projectile from array
-          io.emit("removeObstacle", obstacle.id);
-          qTree.delete(obstacle); //removes obstacle from array
-          delete obstacles[obstacle.id]; 
+          io.emit("updateObstacle", {id:obstacle.id,radius:obstacle.radius} ); //update obstacle on client
+
+          if(obstacle.hp <= 5){ //if obstacle is destroyed
+            players[projectile.owner].score += obstacle.points; 
+            if( players[projectile.owner].hp < players[projectile.owner].maxHp ) players[projectile.owner].hp += 3; //heal player
+            io.emit("removeObstacle", obstacle.id);
+            qTree.delete(obstacle); //removes obstacle 
+            delete obstacles[obstacle.id]; 
+          }
         }
       }); //collision detection with Obstacles
     }catch(e){
@@ -304,12 +315,15 @@ setInterval(() => {
   const obstacleCount = Object.keys(obstacles).length;
   if (maxSpawned < obstacleCount) return;
   const id = uuid.generate();
+  const sz = (Math.round( Math.random() * 5)*10) + 10; //hitbox size: 10 -> 60
   const obstacle = {
     id: id,
     x: arenaSize.x * Math.random(),
     y: arenaSize.y * Math.random(),
-    radius:  Math.random() * (35 - 14) + 6, //hitbox
+    radius: sz,
+    points: sz/2,
     icon: Math.floor(Math.random() * 8),
+    hp: sz,
   };
   qTree.insert(obstacle);
   obstacles[id] = obstacle;

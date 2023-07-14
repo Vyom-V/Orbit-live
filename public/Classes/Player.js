@@ -1,7 +1,5 @@
 class Player {
   constructor(x, y, radius, icon, hp , name) {
-    this.nameTag = new NameTag(this.x, this.y, this.name); 
-    this.hpBar = new HpBar(this.x, this.y, this.hp);
     this.x = x;
     this.y = y;
     this.radius = radius * window.devicePixelRatio;
@@ -9,12 +7,11 @@ class Player {
     this.angle = -1.5708;
     this.hp = hp;
     this.name = name;
-    this.maxHp =  100;
-    this.speed =  5; 
-    this.defense =  0;
-    this.dmgPerShoot =  10;
+    this.maxHp = 100;
     this.rocketPerShoot =  1;
     this.availablePoints =  0;
+    this.nameTag = new NameTag(this.x, this.y, this.name); 
+    this.hpBar = new HpBar(this.x, this.y, this.hp);
   }
 
   draw() {
@@ -37,7 +34,7 @@ class Player {
   updateDirection(cam , animationID) {
     // this.draw();  //hitbox
     this.nameTag.draw( (this.x - cam.x) / devicePixelRatio , (this.y - cam.y) / devicePixelRatio );
-    this.hpBar.draw( (this.x - cam.x) / devicePixelRatio , (this.y - cam.y) / devicePixelRatio , this.hp );
+    this.hpBar.draw( (this.x - cam.x) / devicePixelRatio , (this.y - cam.y) / devicePixelRatio , this.hp ,this.maxHp );
     let angleInRadians = this.angle + 1.5708;
     context.save();
     context.translate(this.x - cam.x, this.y - cam.y);

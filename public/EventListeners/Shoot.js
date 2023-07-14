@@ -11,7 +11,7 @@ window.addEventListener("click", (event) => {
     event.clientX * window.devicePixelRatio - (thisPlayer.x - cam.x) //as camera (ie. entire surroundings) is moving
   );
 
-  const data = {
+  let data = [{
     angle: angle,
     velocity: {
       x: Math.cos(angle),
@@ -19,8 +19,41 @@ window.addEventListener("click", (event) => {
     },
     x: thisPlayer.x,
     y: thisPlayer.y,
-  };
+  }]; 
 
+  
+  if(thisPlayer.rocketPerShoot > 1){ //2 rockets per shoot
+    const spaceBetweenRockets = Math.abs( Math.sin(angle) ) - Math.abs( Math.cos(angle) ) < 0.4 &&
+                               Math.abs( Math.sin(angle) ) - Math.abs( Math.cos(angle) ) > -0.4                          
+                                ? 0 : 1;
+    let offsetX = Math.cos(angle)*15; 
+    let offsetY = Math.sin(angle)*15;
+    if (spaceBetweenRockets) { const temp = offsetX; offsetX = offsetY; offsetY = temp; }
+    
+    data[0].x = thisPlayer.x - offsetX;  //if travelling in x direction,
+    data[0].y = thisPlayer.y + offsetY;  //spread out in y direction & visa versa
+    data.push({
+      angle: angle,
+      velocity: {
+        x: Math.cos(angle),
+        y: Math.sin(angle),
+      },
+      x: thisPlayer.x + offsetX,  //same but in opposite direction of data[0]
+      y: thisPlayer.y - offsetY,  
+    });
+  }
+  if (thisPlayer.rocketPerShoot > 2) {
+    data.push({  //middle rocket
+      angle: angle,
+      velocity: {
+        x: Math.cos(angle),
+        y: Math.sin(angle),
+      },
+      x: thisPlayer.x ,  
+      y: thisPlayer.y ,  
+    });
+  }
+  
   //emiting every 30ms to reduce server load
   if (fired) return;
   socket.emit("shoot", data);
