@@ -25,7 +25,7 @@ let qTree = new QuadTree(arenaRect,2);
 let projectiles = new Array();
 const stats = {
   maxHp: {base: 100, incrementBy: 50, maxPoints: 4, requiredPoints: 1},
-  speed: {base: 5, incrementBy: 0.5, maxPoints: 4, requiredPoints: 1},
+  speed: {base: 5, incrementBy: 0.5, maxPoints: 4, requiredPoints: 0},
   defense: {base: 0, incrementBy: 5, maxPoints: 4, requiredPoints: 1},
   dmgPerShoot: {base: 10, incrementBy: 5, maxPoints: 4, requiredPoints: 1},
   rocketPerShoot: {base: 1, incrementBy: 1, maxPoints: 2, requiredPoints: 2},
@@ -73,6 +73,7 @@ io.on("connection", (socket) => {
     hp: 100,
     maxHp: 100, //150,200,250,300
     speed: 5, //5.5 ,6 ,6.5 ,7
+    velocity: 1, //1.2,1.4,1.6,1.8 --> scales with speed upgrade
     defense: 0, //5,10,15,20
     dmgPerShoot: 10, //15,20,25,30
     rocketPerShoot: 1, //2,3  --> 2 upgrade points per upgrade
@@ -149,7 +150,7 @@ io.on("connection", (socket) => {
           x: data[i].x,
           y: data[i].y,
           owner: socket.id,
-          radius: 5, //hitbox
+          radius: 10, //hitbox
         });
       }
     }catch(e){
@@ -163,6 +164,7 @@ io.on("connection", (socket) => {
 
     if(stats[stat].requiredPoints <= player.availablePoints && player[stat]< (stats[stat].base + (stats[stat].incrementBy * stats[stat].maxPoints)) ) {
       player[stat] += stats[stat].incrementBy;
+      if(stat === "speed") player.velocity += 0.2;
       player.availablePoints -= stats[stat].requiredPoints;
       io.emit("upgradeSuccessful",{id:socket.id,stat});
     }
@@ -259,7 +261,7 @@ setInterval(() => {
     // n = number of projectiles ( max depends on players )
     // m = number of obstacles ( max 1000 )
     try{
-      const pointRange = new Rectangle(projectile.x, projectile.y, 30, 30);
+      const pointRange = new Rectangle(projectile.x, projectile.y, 100, 100);
       let pointsInRange = qTree.nearbyPoints(pointRange,[])
       pointsInRange.forEach((obstacle) => {
         const dist = Math.hypot(projectile.x - obstacle.x, projectile.y - obstacle.y); //distance between projectile and obstacle
@@ -292,8 +294,8 @@ setInterval(() => {
     if(!players[projectile.owner]) return; //if player is dead, skip
 
     //update projectile position
-    projectile.x += projectile.velocity.x * 10;
-    projectile.y += projectile.velocity.y * 10;
+    projectile.x += projectile.velocity.x * 10 * players[projectile.owner].velocity;
+    projectile.y += projectile.velocity.y * 10 * players[projectile.owner].velocity;
 
     const maxDistFromOwner = 1000;
     if ( //if projectile is out of maxDistFromOwner
@@ -331,7 +333,7 @@ setInterval(() => {
     y: arenaSize.y * Math.random(),
     radius: sz,
     points: sz/2,
-    icon: Math.floor(Math.random() * 8),
+    icon: Math.floor(Math.random() * 2),
     hp: sz,
   };
   qTree.insert(obstacle);

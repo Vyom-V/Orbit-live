@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="leaderBoard.css" />
   </head>
   <body>
+    <!-- <canvas id="offscreenCanvas"> </canvas> -->
     <div id="gameOverlay">
       <button onclick="openUi()" id="openUi">➕</button>
       <div class="leaderBoard noSelect">
@@ -64,11 +65,11 @@
       <div id='leftJoystick'></div>
       <div id='rightJoystick'></div>
       
-      <div id='statsUi' class="placeholder noSelect"> 
-        
-      </div>
+      <div id='statsUi' class="placeholder noSelect"></div>
 
-      <canvas></canvas>
+      <!-- <canvas id="offscreenCanvas"></canvas> -->
+      <div id="background"></div>
+      <canvas id="main"></canvas>
 
       <div id="endScreen">
         <div class="container">

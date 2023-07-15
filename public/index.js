@@ -1,27 +1,26 @@
 const scoreBoard = document.getElementById("scoreBoard");
-const canvas = document.querySelector("canvas");
+const canvas = document.getElementById("main");
 const context = canvas.getContext("2d");
 const statsUi = document.getElementById('statsUi');
+const background = document.getElementById('background');
 
 const socket = io(); // initialize a new socket.io instance by passing the server object
 
 const devicePixelRatio = window.devicePixelRatio || 1;
-// canvas.width = window.innerWidth * devicePixelRatio;
-// canvas.height = window.innerHeight * devicePixelRatio;
 var dipRect = canvas.getBoundingClientRect();
 canvas.width = Math.round(devicePixelRatio * dipRect.right) - Math.round(devicePixelRatio * dipRect.left);
 canvas.height = Math.round(devicePixelRatio * dipRect.bottom)- Math.round(devicePixelRatio * dipRect.top);
 
 // ****** Load Resources Images ****** //
 
-let meteorIcons = new Array(8);
+let meteorIcons = new Array(3);
 let meteorCnt = 0;
-for (let i = 0; i < 8; i++) {
+for (let i = 0; i < 2; i++) {
   meteorIcons[i] = new Image();
-  meteorIcons[i].src = `./Resources/PNG/Meteors/${i + 1}.png`;
+  meteorIcons[i].src = `./Resources/PNG/asteroids/base${i + 1}.png`;
   meteorIcons[i].onload = function () {
     meteorCnt++;
-    if (meteorCnt == 8) {
+    if (meteorCnt == 3) {
       console.log("all meteor icons loaded");
     }
   };
@@ -39,14 +38,8 @@ cannon.src = "./Resources/ship/cannon.png";
 let bullet = new Image();
 bullet.src = "./Resources/ship/rocket.png";
 let rock = new Image();
-rock.src = "./Resources/asteroids/base.png";
+rock.src = "./Resources/asteroids/base1.png";
 
-let shield = new Image();
-shield.src = "./Resources/PNG/Effects/shield3.png";
-let rockets = new Image();
-rockets.src = "./Resources/PNG/Effects/fire08.png";
-const bgImg = new Image();
-bgImg.src = "./Resources/Backgrounds/s1.png";
 
 /* ********  Global Variables  ********* */
 
@@ -58,14 +51,10 @@ let started = false;
 let playerDied = false;
 let playerScore = 100;
 let cam = { x: 0, y: 0 };
+const arenaSize ={ x: 5300, y: 3000, };
 
 
 /* ********  Socket Connection and Server Response  ********* */
-
-const arenaSize ={
-  x: 5300,
-  y: 3000,
-};
 
 socket.on("updatePlayers", (backendPlayers) => {
   if (started) playerDied = socket.id in backendPlayers ? false : true;
@@ -265,6 +254,8 @@ socket.on('upgradeSuccessful', (data)=>{
 
 function startCanvas(name) {
   if (name == "") name = "Orbitter";
+  document.getElementById('userPoints').innerHTML = 'Points: 0';
+
   socket.emit("new player", {
     devicePixelRatio,
     name,
@@ -302,22 +293,9 @@ function upgrade(stat) {
 let animationId;
 function animate() {
   animationID = requestAnimationFrame(animate);
-  // console.log(animationID);
-  context.fillRect(0, 0, canvas.width, canvas.height); //clears canvas each time to redraw player and projectiles in new position
-
-  //Background image
-
-  context.drawImage(
-    bgImg,
-    cam.x,
-    cam.y,
-    4000, 
-    2200,
-    0,
-    0,
-    canvas.width,
-    canvas.height, 
-  );
+  context.clearRect(0, 0, canvas.width, canvas.height); //clears canvas each time to redraw player and projectiles in new position
+  background.style.left = -cam.x+'px'; 
+  background.style.top = -cam.y+'px';
 
 
   for (let i = 0; i < frontendProjectiles.length; i++) {

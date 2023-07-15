@@ -12,6 +12,7 @@
 #statsUi{
   height: 0;
   display: none;
+  z-index: 1;
 }
 
 #statsCloseBtn{
@@ -55,12 +56,13 @@ html,body{
     display: flex;
     flex-direction: column;
     align-self: center;
-    justify-content: center;
+    justify-content: space-evenly;
+  
 }
 
 h1{
     font-size: 3em;
-    margin-top: 0;
+    margin: 0;
     position: relative;
     user-select: none;
     -webkit-user-select: none;
@@ -119,6 +121,15 @@ ul li:hover{
     100%{transform: scale(1);
     -webkit-transform: scale(1.0);
     -moz-transform: scale(1.0);}
+}
+
+#menu{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+  width: 100%;
 }
 
 .list {

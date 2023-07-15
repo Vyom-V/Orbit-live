@@ -1,42 +1,85 @@
 <head>
   <style>
-    
+    #offscreenCanvas {
+      /* display: none; */
+      /* opacity: 0; */
+      height: 5000;
+      width: 5000;
+      background-image: url("./Resources/Backgrounds/black.png");
+    }
+    #main {
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
   </style>
 </head>
 
-<div class="placeholder"> 
-  <div class="container" id="containerId">
-      <h1>ORBITTER</h1>
-      <div id="menu">
-          <ul class="list">
-              <li class='menuItem' id="Speed" onclick="select(this)">
-                  <div class='bar'></div>
-                  <div class='bar'></div>
-                  <div class='bar'></div>
-                  <span>Speed 1pt</span>
-              </li>
-              <li class='menuItem' id="Damage" onclick="select(this)">
-                <div class='bar'></div>
-                <div class='bar'></div>
-                  <span>Damage 1pt</span>
-              </li>
-              <li class='menuItem' id="Defense" onclick="select(this)">
-                
-                <div class='bar'></div>
-                <div class='bar'></div>
-                <div class='bar'></div>
-                <div class='bar'></div>
-                  <span>Defense 1pt</span>
-              </li>
-              <li class='menuItem' id="HP" onclick="select(this)">
-                <span>HP 1pt</span>
-              </li>
-              <li class='menuItem' id="Rockets" onclick="select(this)">
-                  <div class='bar'></div>
-                  <div class='bar'></div>
-                  <span>Rockets 2pt</span>
-              </li>
-          </ul>
-      </div>
-  </div>
-</div>
+<!-- <canvas id="offscreenCanvas"> </canvas> -->
+<div id="offscreenCanvas"></div>
+<canvas id="main"></canvas>
+<script>
+  // let bgImg = new Array(4);
+  // for (let i = 1; i < 4; i++) {
+  //   bgImg[i] = new Image();
+  //   bgImg[i].src = `./Resources/Backgrounds/p${i}.png`;
+  // }
+
+  const bgImg = new Image();
+  bgImg.src = "./Resources/Backgrounds/black.png";
+  bgImg.onload = function () {
+    const pattern = ctx.createPattern(bgImg, "repeat");
+    ctx.fillStyle = pattern;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  };
+  var canvas = document.getElementById("offscreenCanvas");
+  var ctx = canvas.getContext("2d");
+  var dipRect = canvas.getBoundingClientRect();
+  canvas.width =
+    Math.round(devicePixelRatio * dipRect.right) -
+    Math.round(devicePixelRatio * dipRect.left);
+  canvas.height =
+    Math.round(devicePixelRatio * dipRect.bottom) -
+    Math.round(devicePixelRatio * dipRect.top);
+
+  let mainCanvas = document.getElementById("main");
+  let mainCtx = mainCanvas.getContext("2d");
+  mainCanvas.width =
+    Math.round(devicePixelRatio * dipRect.right) -
+    Math.round(devicePixelRatio * dipRect.left);
+  mainCanvas.height =
+    Math.round(devicePixelRatio * dipRect.bottom) -
+    Math.round(devicePixelRatio * dipRect.top);
+
+  mainCanvas.offScreenCanvas = canvas;
+
+  function animate() {
+    animationID = requestAnimationFrame(animate);
+    // console.log(animationID);
+    mainCtx.fillRect(0, 0, mainCanvas.width, mainCanvas.height); //clears canvas each time to redraw player and projectiles in new position
+    // for (let i = 1; i < 4; i++) {
+    //   ctx.drawImage(bgImg[i],
+    //   0 + (640 * Math.floor( (animationID%81)/9 ) ),
+    //   0,
+    //   640,
+    //   360,
+    //   0, 0,canvas.width,canvas.height);
+    // }
+
+    // mainCtx.drawImage(
+    //   mainCanvas.offScreenCanvas,
+    //   0,
+    //   0,
+    //   window.innerWidth,
+    //   window.innerHeight,
+    //   0,
+    //   0,
+    //   mainCanvas.width,
+    //   mainCanvas.height
+    // );
+  }
+  animate();
+</script>

@@ -11,10 +11,31 @@ body {
     height: 100vh;
     width: 100vw;
   }
-canvas{
-  height: 100%;
-  width: 100%;
-}
+
+  #rightJoystick{
+    z-index: 1;
+  }
+  #leftJoystick{
+    z-index: 1;
+  } 
+
+  #background{
+    /* display: none; */
+    /* opacity: 0; */
+    position: absolute;
+      height: 5000px;
+      width: 5000px;
+      z-index: -10;
+      background-image: url("./Resources/Backgrounds/bg.png");
+    
+  }
+  #main{
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
 
   .hpBar{
     height: 5px;
@@ -59,6 +80,7 @@ canvas{
     width: 100vw;
     height: 100vh;
     display: none;
+    z-index: 2;
   }
 
 
@@ -82,6 +104,7 @@ canvas{
     width: 100%;
     height: 100%;
     background-color: #121223;
+    z-index: 2;
   }
   .container{
     flex-direction: column;
@@ -98,7 +121,7 @@ canvas{
     font-family: 'Raleway', sans-serif;
     font-weight: 900;
     text-align: center;
-    margin-bottom: 30px;
+    /* margin-bottom: 30px; */
   } 
   .container p{
     margin: 0;
