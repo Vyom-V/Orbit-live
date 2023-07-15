@@ -10,7 +10,7 @@ class Particle {
             x: (Math.random() - 0.5) * (Math.random() * 15),
             y: (Math.random() - 0.5) * (Math.random() * 15),
           },
-    this.friction = 0.985;
+    this.friction = 0.99;
 
   }
 
@@ -29,6 +29,7 @@ class Particle {
     
     this.radius -= 0.1; //shrinks particles
     this.draw();
+    this.friction -= 0.003; 
     this.velocity.x *= this.friction; //slows down particles
     this.velocity.y *= this.friction;
     this.x = this.x + this.velocity.x;

@@ -92,6 +92,13 @@ io.on("connection", (socket) => {
       players[socket.id].y = playerLocation.y;
       players[socket.id].hasJoined = true;
       players[socket.id].score = 100;
+      players[socket.id].availablePoints = 0;
+      players[socket.id].receievedPoints = 0;
+      players[socket.id].maxHp = 100;
+      players[socket.id].speed = 5;
+      players[socket.id].defense = 0;
+      players[socket.id].dmgPerShoot = 10;
+      players[socket.id].rocketPerShoot = 1;
     }catch(e){
       console.log(e);
     }
@@ -184,6 +191,8 @@ setInterval(() => {
       const player = players[id];
       if (!player || !player.hasJoined) continue;
       
+      if(player.hp < player.maxHp) player.hp += 0.03; //regen hp passive
+
       if(player.score > pointSystem[player.receievedPoints]) {
         player.availablePoints++;
         player.receievedPoints++;

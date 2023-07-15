@@ -2,7 +2,6 @@ const scoreBoard = document.getElementById("scoreBoard");
 const canvas = document.querySelector("canvas");
 const context = canvas.getContext("2d");
 const statsUi = document.getElementById('statsUi');
-const userPoints = document.getElementById('userPoints');
 
 const socket = io(); // initialize a new socket.io instance by passing the server object
 
@@ -14,19 +13,6 @@ canvas.width = Math.round(devicePixelRatio * dipRect.right) - Math.round(deviceP
 canvas.height = Math.round(devicePixelRatio * dipRect.bottom)- Math.round(devicePixelRatio * dipRect.top);
 
 // ****** Load Resources Images ****** //
-
-let playerIcons = new Array(12);
-let imagesLoaded = 0;
-for (let i = 0; i < 12; i++) {
-  playerIcons[i] = new Image();
-  playerIcons[i].src = `./Resources/PNG/${i + 1}.png`;
-  playerIcons[i].onload = function () {
-    imagesLoaded++;
-    if (imagesLoaded == 12) {
-      console.log("all player icons loaded");
-    }
-  };
-}
 
 let meteorIcons = new Array(8);
 let meteorCnt = 0;
@@ -185,7 +171,7 @@ socket.on("updatePlayers", (backendPlayers) => {
 socket.on("playerDisconnected", (id) => {
   if (frontendPlayers[id]) {
     frontendPlayers[id].nameTag.elem.remove();
-    frontendPlayers[id].hpBar.elem.remove();
+    frontendPlayers[id].hpBar.remove();
     delete frontendPlayers[id];
   }
 });
@@ -202,8 +188,11 @@ socket.on("playerKilled", (id) => {
       return;
     }
     frontendPlayers[id].nameTag.elem.remove();
-    frontendPlayers[id].hpBar.elem.remove();
+    frontendPlayers[id].hpBar.remove();
     delete frontendPlayers[id];
+
+    statsUi.innerHTML = newStatsUi();
+
   }
 });
 
@@ -218,7 +207,12 @@ socket.on("newObstacle", (obstacle) => {
   frontendObstacles[obstacle.id] = obstacle;
 });
 socket.on("updateObstacle", (obstacle) => {
-  frontendObstacles[obstacle.id].radius = obstacle.radius;
+  gsap.to(frontendObstacles[obstacle.id], {
+      radius: obstacle.radius,
+      duration: 0.015,
+      ease: "linear",
+    });
+  // frontendObstacles[obstacle.id].radius = obstacle.radius;
 });
 socket.on("removeObstacle", (id) => {
   if(frontendObstacles[id]){
@@ -236,13 +230,14 @@ socket.on("hit", (backendHitLocation) => {
     backendHitLocation.y > cam.y + canvas.height
   ) return; //if hit is outside of viewport, dont render it
 
-  for(let i=0;i<15;i++){
+  for(let i=0;i<8;i++){
     frontendParticles.push(new Particle(backendHitLocation));
   }
 });
 
 socket.on('levelUp' , (id) => {
   if(socket.id != id) return;
+  const userPoints = document.getElementById('userPoints');
   
   openUi();
   frontendPlayers[id].availablePoints++;
@@ -259,7 +254,7 @@ socket.on('upgradeSuccessful', (data)=>{
   userPoints.innerHTML = 'Points: ' + frontendPlayers[socket.id].availablePoints;
   const stat = document.getElementById(data.stat);
   const pt = document.createElement('div');
-  if(data.stat == 'rocketPerShoot') pt.classList.add('2bar');
+  if(data.stat == 'rocketPerShoot') pt.classList.add('bar2');
   else pt.classList.add('bar');
   stat.appendChild(pt);
   console.log('success');
@@ -333,7 +328,7 @@ function animate() {
       frontendProjectile.y < cam.y ||
       frontendProjectile.y > cam.y + canvas.height
     ) {
-      continue; //only render players that are in the viewport
+      continue; //only render that are in the viewport
     }
     context.save();
     context.translate(
@@ -360,7 +355,7 @@ function animate() {
       frontendObstacle.y < cam.y ||
       frontendObstacle.y > cam.y + canvas.height
     ) {
-      continue; //only render players that are in the viewport
+      continue; //only render that are in the viewport
     }
 
     // drawns hit box
@@ -389,7 +384,7 @@ function animate() {
       frontendParticle.y < cam.y ||
       frontendParticle.y > cam.y + canvas.height
     ) {
-      frontendParticles.splice(i, 1); //only render players that are in the viewport
+      frontendParticles.splice(i, 1); //only render that are in the viewport
     }
     if(frontendParticle.radius <= 1){
       frontendParticles.splice(i, 1); //removes projectile from array

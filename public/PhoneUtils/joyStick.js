@@ -2,15 +2,15 @@ var leftManager;
 var rightManager;
 
 function initJoystick() {
-    var leftOptions = {
+    var leftOptions = { //movement
         zone: document.getElementById('leftJoystick'),
         mode: 'dynamic',
-        size: 75,
+        size: 100,
     };
-    var rightOptions = {
+    var rightOptions = { //shoot
         zone: document.getElementById('rightJoystick'),
         mode: 'dynamic',
-        size: 75,
+        size: 100,
     };
     leftManager = nipplejs.create(leftOptions);
     rightManager = nipplejs.create(rightOptions);
@@ -48,12 +48,19 @@ function initJoystick() {
 
     rightManager.on('added', function (evt, rightJoystick) {
         let setIntervalId = null;
-        let fireData = null;
-
+        let fireData = [];
+        
         //emiting every 200ms to make it more fair
-        setIntervalId = setInterval(() => {
-            if(fireData != null)
+        setIntervalId = setInterval(() => { //fire rate limiter
+            const thisPlayer = frontendPlayers[socket.id];
+            if(fireData.length != 0)
             fired = true; //firing effect for mobile
+            
+            for(let i = 0;i<fireData.length;i++){ //bug fixed
+                fireData[i].x = thisPlayer.x;
+                fireData[i].y = thisPlayer.y;
+            }
+
             socket.emit("shoot", fireData);
             let promise = new Promise((resolve, reject) => {
                 setTimeout(() => {
@@ -70,8 +77,8 @@ function initJoystick() {
             const thisPlayer = frontendPlayers[socket.id];
 
             const fireAngle = 2*Math.PI - data.angle.radian;
-
-            fireData = {
+            fireData = [];
+            fireData.push({
                 angle: fireAngle,
                 velocity: {
                   x: Math.cos(fireAngle),
@@ -79,7 +86,39 @@ function initJoystick() {
                 },
                 x: thisPlayer.x,
                 y: thisPlayer.y,
-              };
+              });
+            
+            if(fireData.length<2 && thisPlayer.rocketPerShoot > 1){ //2 rockets per shoot
+            const spaceBetweenRockets = Math.abs( Math.sin(fireAngle) ) - Math.abs( Math.cos(fireAngle) ) < 0.4 &&
+                                        Math.abs( Math.sin(fireAngle) ) - Math.abs( Math.cos(fireAngle) ) > -0.4                          
+                                        ? 0 : 1;
+            let offsetX = Math.cos(fireAngle)*15; 
+            let offsetY = Math.sin(fireAngle)*15;
+            if (spaceBetweenRockets) { const temp = offsetX; offsetX = offsetY; offsetY = temp; }
+            
+            fireData[0].x = thisPlayer.x - offsetX;  //if travelling in x direction,
+            fireData[0].y = thisPlayer.y + offsetY;  //spread out in y direction & visa versa
+            fireData.push({
+                angle: fireAngle,
+                velocity: {
+                x: Math.cos(fireAngle),
+                y: Math.sin(fireAngle),
+                },
+                x: thisPlayer.x + offsetX,  //same but in opposite direction of fireData[0]
+                y: thisPlayer.y - offsetY,  
+            });
+            }
+            if (fireData.length < 3 && thisPlayer.rocketPerShoot > 2) {
+            fireData.push({  //middle rocket
+                angle: fireAngle,
+                velocity: {
+                x: Math.cos(fireAngle),
+                y: Math.sin(fireAngle),
+                },
+                x: thisPlayer.x ,  
+                y: thisPlayer.y ,  
+            });
+            }
 
             
         })

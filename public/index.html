@@ -65,32 +65,11 @@
       <div id='rightJoystick'></div>
       
       <div id='statsUi' class="placeholder noSelect"> 
-        <div class="container" id="containerId">
-          <h1>ORBITTER</h1>
-          <h3 id="userPoints"></h3>
-          <div id="menu">
-                <div onclick="closeUi()" id="statsCloseBtn">&times;</div>
-                <ul class="list">
-                    <li class='menuItem' id="speed" onclick="upgrade(this)">
-                        <span>Speed <i>1pt</i></span>
-                    </li>
-                    <li class='menuItem' id="dmgPerShoot" onclick="upgrade(this)">
-                        <span>Damage <i>1pt</i></span>
-                    </li>
-                    <li class='menuItem' id="defense" onclick="upgrade(this)">
-                        <span>Defense <i>1pt</i></span>
-                    </li>
-                    <li class='menuItem' id="maxHp" onclick="upgrade(this)">
-                      <span>HP <i>1pt</i></span>
-                    </li>
-                    <li class='menuItem' id="rocketPerShoot" onclick="upgrade(this)">
-                        <span>Rockets <i>2pt</i></span>
-                    </li>
-                </ul>
-            </div>
-        </div>
+        
       </div>
+
       <canvas></canvas>
+
       <div id="endScreen">
         <div class="container">
           <h1>GAME OVER!</h1>
@@ -145,6 +124,7 @@
     <script src="./EventListeners/Controller.js"></script>
     <script src="./EventListeners/Shoot.js"></script>
     <script src="./PhoneUtils/joyStick.js"></script>
+    <script src="./UIComponents/statsUi.js"></script>
     <script src="index.js"></script>
     <script>
       const startSfx = new Audio("./Resources/Bonus/start.wav");
@@ -155,6 +135,8 @@
           thisScreenOrientation.lock("landscape").catch((err) => { console.log(err); });
           initJoystick();
         }
+        
+        document.getElementById("statsUi").innerHTML = newStatsUi();
         const name = document.getElementById("nameS").value;
         startSfx.play();
         startCanvas(name);
@@ -162,6 +144,7 @@
         document.getElementById("endScreen").style.display = "none";
       };
       const restart = () => {
+        document.getElementById("statsUi").innerHTML = newStatsUi();
         const name = document.getElementById("nameR").value;
         startSfx.play();
         resetCanvas(name);

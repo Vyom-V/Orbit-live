@@ -16,6 +16,21 @@ canvas{
   width: 100%;
 }
 
+  .hpBar{
+    height: 5px;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute; 
+  }
+  .hpBarSection{
+    height: 5px;
+    z-index: 1;
+    box-sizing: border-box;
+    border: 0.1rem solid #ffffff;
+  }
+
   .noSelect {
     user-select: none;
   }
