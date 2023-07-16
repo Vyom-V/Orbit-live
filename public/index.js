@@ -58,7 +58,11 @@ const arenaSize ={ x: 5300, y: 3000, };
 
 socket.on("updatePlayers", (backendPlayers) => {
   if (started) playerDied = socket.id in backendPlayers ? false : true;
-  if (playerDied) return;
+  if (playerDied) return; 
+
+  const userPoints = document.getElementById('userPoints');
+  userPoints.innerHTML = 'Points: ' + backendPlayers[socket.id].availablePoints;
+
 
   const currPLayer = backendPlayers[socket.id];
   cam.x = currPLayer.x - canvas.width / 2; //canvas width can change for different devices, FIX LATER
@@ -152,7 +156,8 @@ socket.on("updatePlayers", (backendPlayers) => {
       frontendPlayers[id].hp = backendPlayer.hp;
       frontendPlayers[id].maxHp = backendPlayer.maxHp;
       frontendPlayers[id].rocketPerShoot = backendPlayer.rocketPerShoot;
-      frontendPlayers[id].availablePoints =  backendPlayer.availablePoints;
+      // frontendPlayers[id].availablePoints =  backendPlayer.availablePoints;
+
     }
   }
 });
@@ -167,6 +172,7 @@ socket.on("playerDisconnected", (id) => {
 
 socket.on("playerKilled", (id) => {
   if (frontendPlayers[id]) {
+
     if(id == socket.id) {
       playerDied = true;
       //sound effect
@@ -174,13 +180,13 @@ socket.on("playerKilled", (id) => {
       gameOverSound.play();
       gameOver();
       cancelAnimationFrame(animationID); //stops animation loop at current frame
+      statsUi.innerHTML = newStatsUi();
       return;
     }
+    
     frontendPlayers[id].nameTag.elem.remove();
     frontendPlayers[id].hpBar.remove();
     delete frontendPlayers[id];
-
-    statsUi.innerHTML = newStatsUi();
 
   }
 });
@@ -226,13 +232,10 @@ socket.on("hit", (backendHitLocation) => {
 
 socket.on('levelUp' , (id) => {
   if(socket.id != id) return;
-  const userPoints = document.getElementById('userPoints');
   
   openUi();
-  frontendPlayers[id].availablePoints++;
-  userPoints.innerHTML = 'Points: ' + frontendPlayers[id].availablePoints;
-  
-   setTimeout(() => {
+
+  setTimeout(() => {
     closeUi();
   }, 5000);
 })
@@ -240,7 +243,6 @@ socket.on('levelUp' , (id) => {
 socket.on('upgradeSuccessful', (data)=>{
   if(data.id != socket.id) return;
 
-  userPoints.innerHTML = 'Points: ' + frontendPlayers[socket.id].availablePoints;
   const stat = document.getElementById(data.stat);
   const pt = document.createElement('div');
   if(data.stat == 'rocketPerShoot') pt.classList.add('bar2');
@@ -259,6 +261,7 @@ function startCanvas(name) {
   socket.emit("new player", {
     devicePixelRatio,
     name,
+    id: socket.id,
   });
   started = true;
   animate();

@@ -25,8 +25,8 @@ let qTree = new QuadTree(arenaRect,2);
 let projectiles = new Array();
 const stats = {
   maxHp: {base: 100, incrementBy: 50, maxPoints: 4, requiredPoints: 1},
-  speed: {base: 5, incrementBy: 0.5, maxPoints: 4, requiredPoints: 0},
-  defense: {base: 0, incrementBy: 5, maxPoints: 4, requiredPoints: 1},
+  speed: {base: 5, incrementBy: 0.5, maxPoints: 4, requiredPoints: 1},
+  defense: {base: 0, incrementBy: 15, maxPoints: 4, requiredPoints: 1},
   dmgPerShoot: {base: 10, incrementBy: 5, maxPoints: 4, requiredPoints: 1},
   rocketPerShoot: {base: 1, incrementBy: 1, maxPoints: 2, requiredPoints: 2},
 };
@@ -58,7 +58,7 @@ const generatePlayerLocation = () => {
     while(badSpawn)
 }
 
-io.on("connection", (socket) => {
+io.on("connection", (socket) => { 
   console.log("a user joined");
   
   players[socket.id] = {
@@ -74,7 +74,7 @@ io.on("connection", (socket) => {
     maxHp: 100, //150,200,250,300
     speed: 5, //5.5 ,6 ,6.5 ,7
     velocity: 1, //1.2,1.4,1.6,1.8 --> scales with speed upgrade
-    defense: 0, //5,10,15,20
+    defense: 0, //15,30,45,60 in percent
     dmgPerShoot: 10, //15,20,25,30
     rocketPerShoot: 1, //2,3  --> 2 upgrade points per upgrade
     availablePoints: 0,
@@ -86,20 +86,20 @@ io.on("connection", (socket) => {
     io.emit("getObstacles", obstacles);
     try{
       const playerLocation = generatePlayerLocation();
-      players[socket.id].name = data.name;
-      players[socket.id].devicePixelRatio = data.devicePixelRatio;
-      players[socket.id].hp = 100;
-      players[socket.id].x = playerLocation.x;
-      players[socket.id].y = playerLocation.y;
-      players[socket.id].hasJoined = true;
-      players[socket.id].score = 100;
-      players[socket.id].availablePoints = 0;
-      players[socket.id].receievedPoints = 0;
-      players[socket.id].maxHp = 100;
-      players[socket.id].speed = 5;
-      players[socket.id].defense = 0;
-      players[socket.id].dmgPerShoot = 10;
-      players[socket.id].rocketPerShoot = 1;
+      players[data.id].name = data.name;
+      players[data.id].devicePixelRatio = data.devicePixelRatio;
+      players[data.id].hp = 100;
+      players[data.id].x = playerLocation.x;
+      players[data.id].y = playerLocation.y;
+      players[data.id].hasJoined = true;
+      players[data.id].score = 100;
+      players[data.id].availablePoints = 0;
+      players[data.id].receievedPoints = 0;
+      players[data.id].maxHp = 100;
+      players[data.id].speed = 5;
+      players[data.id].defense = 0;
+      players[data.id].dmgPerShoot = 10;
+      players[data.id].rocketPerShoot = 1;
     }catch(e){
       console.log(e);
     }
@@ -162,11 +162,12 @@ io.on("connection", (socket) => {
     const player = players[socket.id];
     if (!player || !player.hasJoined) return;                         
 
-    if(stats[stat].requiredPoints <= player.availablePoints && player[stat]< (stats[stat].base + (stats[stat].incrementBy * stats[stat].maxPoints)) ) {
+    if(stats[stat].requiredPoints <= player.availablePoints && player[stat] < (stats[stat].base + (stats[stat].incrementBy * stats[stat].maxPoints)) ) {
+      player.availablePoints -= stats[stat].requiredPoints;
       player[stat] += stats[stat].incrementBy;
       if(stat === "speed") player.velocity += 0.2;
-      player.availablePoints -= stats[stat].requiredPoints;
-      io.emit("upgradeSuccessful",{id:socket.id,stat});
+      console.log("upgrade successful");
+      io.emit("upgradeSuccessful",{id:socket.id,stat}); 
     }
   });
 
@@ -183,7 +184,7 @@ io.on("connection", (socket) => {
 setInterval(() => {
   io.emit("updateProjectiles", projectiles);  
   io.emit("updatePlayers", players);
-  // console.log(Object.keys(obstacles).length);
+  
   //collision detection between players and obstacles
   // O(nLogm) complexity 
   // n = number of players ( max 10 )
@@ -243,7 +244,7 @@ setInterval(() => {
             type: 5,
           })
           
-          player.hp -= player[projectile.owner].dmgPerShoot - player.defense; //damage player
+          player.hp -= (players[projectile.owner].dmgPerShoot * ( (100 - player.defense )/100) ); //damage player
           if (player.hp <= 0){ 
             players[projectile.owner].score += Math.round(player.score * 0.4); //add score to player who killed the other player
             io.emit("playerKilled", id); 
