@@ -181,7 +181,7 @@ io.on("connection", (socket) => {
 });
 
 
-setInterval(() => {
+const intervalID = setInterval(() => {
   io.emit("updateProjectiles", projectiles);  
   io.emit("updatePlayers", players);
   
